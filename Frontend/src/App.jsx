@@ -13,20 +13,21 @@ const App = () => {
     return (
         <div >
             {/* Background */}
-
-            <div style={{ backgroundImage: `url(${assets.background_start})` }}
-                className="bg-cover bg-center bg-no-repeat bg-fixed w-full min-h-screen">
-
-
-                <Routes>
-                    <Route path='/' element={<MainLayout />}>
-                        <Route index element={<AboutProject />} />
-                        <Route path='how-to-start' element={<HowToStart />} />
-                        <Route path='my-devices' element={<MyDevices />} />
-                        <Route path='download' element={<Download />} />
-                    </Route>
-                </Routes>
+            <div
+                className="fixed inset-0 -z-10 
+               bg-cover bg-center"
+                style={{ backgroundImage: `url(${assets.background_start})` }}>
             </div>
+
+            <Routes>
+                <Route path='/' element={<MainLayout />}>
+                    <Route index element={<AboutProject />} />
+                    <Route path='how-to-start' element={<HowToStart />} />
+                    <Route path='my-devices' element={<MyDevices />} />
+                    <Route path='download' element={<Download />} />
+                </Route>
+            </Routes>
+
         </div>
     )
 }
