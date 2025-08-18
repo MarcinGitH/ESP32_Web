@@ -14,8 +14,7 @@ const App = () => {
         <div >
             {/* Background */}
             <div
-                className="fixed inset-0 -z-10 
-               bg-cover bg-center"
+                className="fixed inset-0 -z-10  bg-cover bg-center h-screen"
                 style={{ backgroundImage: `url(${assets.background_start})` }}>
             </div>
 
