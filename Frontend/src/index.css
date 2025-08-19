@@ -7,6 +7,7 @@
 
 * {
   font-family: Outfit;
+  margin:0;
 }
 
 
@@ -14,7 +15,7 @@
 
 @layer components {
   .login-button {
-    @apply relative px-4 py-2 rounded-lg bg-cyan-400 text-black font-semibold shadow-md transition-all duration-300 hover:bg-black hover:text-white hover:shadow-xl after:content-[""] after:absolute after:left-1/2 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:left-0 hover:after:w-full
+    @apply relative px-4 py-2 rounded-lg bg-cyan-400 text-gray-800 font-semibold shadow-md transition-all duration-300 hover:bg-black hover:text-white hover:shadow-xl after:content-[""] after:absolute after:left-1/2 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:left-0 hover:after:w-full
   }
 
   .nav-link {
@@ -23,6 +24,14 @@
 
   .nav-link-active {
     @apply text-gray-100 relative after:content-[""] after:absolute after:bottom-0 after:h-[2px] after:bg-white after:left-0 after:w-full
+  }
+
+  .nav-link-mobile {
+    @apply text-gray-400 block w-full text-5xl my-5 py-5 
+  }
+
+   .nav-link-mobile-active {
+    @apply text-gray-100 underline-offset-15 underline block w-full text-5xl my-5 py-5 
   }
 }
 

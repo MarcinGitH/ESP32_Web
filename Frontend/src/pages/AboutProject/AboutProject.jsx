@@ -1,19 +1,30 @@
 import React from 'react'
 import EasyConfigImg from "./assets/images/EasyConfig.png"
 import ChartsImg from "./assets/images/Charts.jpg"
+import LiveControlImg from "./assets/images/LiveControl.jpg"
 import { motion } from "framer-motion"
 
 const AboutProject = () => {
     return (
         <div>
-            <div className='px-5 mt-10 lg:mt-30 flex flex-col'>
-                {/* Szybka konfiguracja */}
-                <motion.div
+            <div className='px-5 pt-60 lg:mt-30 flex flex-col items-center'>
+                {/* Header */}
+                <motion.div 
                     initial={{ opacity: 0, y: -100 }}
                     transition={{ duration: 2 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className='flex flex-col items-center gap-20 lg:flex-row 2xl:gap-80 justify-center container mx-auto border-b-5 py-20 lg:py-60 border-b-cyan-100'>
+                    className='flex flex-col justify-center items-center gap-6'>
+                    <h1 className='text-3xl md:text-5xl lg:text-6xl text-gray-300 font-bold'>Zbuduj swój system IoT</h1>
+                    <p className='text-md md:text-2xl lg:text-3xl text-gray-300'>Zarządzaj urządzeniami z dowolnego miejsca na świecie</p>
+                </motion.div>
+                {/* Szybka konfiguracja */}
+                <motion.div
+                    initial={{ opacity: 0, y: 100 }}
+                    transition={{ duration: 2 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className='flex flex-col items-center gap-20 lg:flex-row 2xl:gap-80 justify-center container mx-auto border-b-5 py-20 lg:py-60 border-b-cyan-600'>
                     <div className='bg-black rounded-3xl p-5 py-8'>
                         <h2 className='text-gray-100 font-medium text-2xl sm:text-4xl mb-4'>Łatwa konfiguracja</h2>
                         <ul className='flex flex-col gap-4 ml-15'>
@@ -33,7 +44,7 @@ const AboutProject = () => {
                     transition={{ duration: 2 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    className='flex flex-col justify-center gap-20 lg:flex-row 2xl:gap-80 items-center container mx-auto py-20 lg:py-60 border-b-5 border-b-cyan-100'>
+                    className='flex flex-col justify-center gap-20 lg:flex-row 2xl:gap-80 items-center container mx-auto py-20 lg:py-60 border-b-5 border-b-cyan-600'>
                     <div className='max-w-lg order-2 lg:order-1'>
                         <img src={ChartsImg} alt="" className='w-full' />
                     </div>
@@ -61,7 +72,7 @@ const AboutProject = () => {
                         </ul>
                     </div>
                     <div className='max-w-lg'>
-                        <img src={EasyConfigImg} alt="" className='w-full' />
+                        <img src={LiveControlImg} alt="" className='w-full' />
                     </div>
                 </motion.div>
             </div>
