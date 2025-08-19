@@ -9,14 +9,14 @@ const AboutProject = () => {
         <div>
             <div className='px-5 pt-60 lg:mt-30 flex flex-col items-center'>
                 {/* Header */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: -100 }}
                     transition={{ duration: 2 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className='flex flex-col justify-center items-center gap-6'>
                     <h1 className='text-3xl md:text-5xl lg:text-6xl text-gray-300 font-bold'>Zbuduj swój system IoT</h1>
-                    <p className='text-md md:text-2xl lg:text-3xl text-gray-300'>Zarządzaj urządzeniami z dowolnego miejsca na świecie</p>
+                    <p className='text-md md:text-2xl lg:text-3xl text-gray-300 text-center'>Zarządzaj urządzeniami z dowolnego miejsca na świecie</p>
                 </motion.div>
                 {/* Szybka konfiguracja */}
                 <motion.div

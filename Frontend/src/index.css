@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
 
 @import "tailwindcss";
 
@@ -10,9 +10,10 @@
 
 @layer base {
   * {
-  font-family: Outfit;
-  margin:0;
-}
+    font-family: Outfit;
+    margin: 0;
+
+  }
 }
 
 @layer components {
@@ -29,20 +30,20 @@
   }
 
   .nav-link-mobile {
-    @apply text-gray-400 block w-full text-5xl my-5 py-5 
+    @apply text-gray-400 block w-full text-2xl my-5 py-1
   }
 
-   .nav-link-mobile-active {
-    @apply pointer-events-none text-gray-100 underline-offset-15 underline block w-full text-5xl my-5 py-5 
+  .nav-link-mobile-active {
+    @apply pointer-events-none text-gray-100 underline-offset-15 underline
   }
 
   .sidebar-link {
     @apply block w-full text-center py-3 border-b-1 border-black cursor-pointer text-gray-400 bg-gray-800 hover:bg-gray-700 hover:text-gray-100 hover:transform relative after:content-[""] after:absolute after:left-1/2 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:left-0 hover:after:w-full
   }
 
-   .sidebar-link-active {
+  .sidebar-link-active {
     @apply pointer-events-none bg-gray-700 text-gray-100 relative after:content-[""] after:absolute after:bottom-0 after:h-[2px] after:bg-white after:left-0 after:w-full
-   }
+  }
 }
 
 @layer utilities {
