@@ -4,16 +4,22 @@ from rest_framework.response import Response
 from .serializers import DeviceDataSerializer
 import redis
 from datetime import datetime, timedelta
+from EspServer.models import SensorData
+from django.utils import timezone
+from datetime import timedelta
 
 
 @api_view(['GET'])
-def user_devices(request):
-    recent_values = [
-        {"device_id": 1, "value": 20},
-        {"device_id": 2, "value": 3},
-        {"device_id": 3, "value": 13}
-    ]
+def user_devices(request, sensorId):
+    user = "marcin"
 
-    # Serializacja danych
-    serializer = DeviceDataSerializer(recent_values, many=True)
+    time_threshold = timezone.now() - timedelta(hours=24)
+
+    data = SensorData.objects.filter(
+        sensor__device__user__username=user,
+        sensor__sensor_id=sensorId,
+        timestamp__gte=time_threshold
+    ).order_by("timestamp")
+
+    serializer = DeviceDataSerializer(data, many=True)
     return Response(serializer.data)
