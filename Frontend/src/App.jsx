@@ -7,9 +7,9 @@ import MainLayout from './layouts/MainLayout'
 import SidebarLayout from './layouts/SidebarLayout'
 import HowToStart from './pages/HowToStart/HowToStart'
 import Download from './pages/Download/Download'
-import Dashboard from './pages/MyDevices/pages/Dashboard'
-import LiveView from './pages/MyDevices/pages/LiveView'
-import DeviceConf from './pages/MyDevices/pages/DeviceConf'
+import LiveView from './pages/MyDevices/pages/LiveView/LiveView'
+import Dashboard from './pages/MyDevices/pages/Dashboard/Dashboard'
+import DeviceConf from './pages/MyDevices/pages/DeviceConf/DeviceConf'
 
 
 const App = () => {

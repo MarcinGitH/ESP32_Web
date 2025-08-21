@@ -4,7 +4,7 @@ import menuBar from './icons/menuBar.svg'
 import settingsIcon from './icons/settings.svg'
 import chartIcon from './icons/chart.svg'
 import liveIcon from './icons/live.svg'
-
+import xmark from './icons/xmark.svg'
 
 
 
@@ -29,6 +29,80 @@ export const liveDataSensors = [
 ]
 
 
+
+
+export const sensor24h = [
+    
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 15.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+    { value: 10.2, timestamp: 1755772511455},
+    { value: 10.2, timestamp: 1755772631455},
+
+
+]
+
 export const assets = {
     logo,
     background_start,
@@ -36,5 +110,6 @@ export const assets = {
     settingsIcon,
     chartIcon,
     liveIcon,
+    xmark,
 
 }
