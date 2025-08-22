@@ -1,57 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { Line } from "react-chartjs-2";
-import axios from "axios";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  Tooltip,
-  TimeScale
-} from 'chart.js';
-import 'chartjs-adapter-date-fns';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { sensor24h } from '../../../../assets/assets';
-import { motion, rgba } from 'framer-motion';
+import axios from "axios";
+
+
+import { motion } from 'framer-motion';
 import SensorCard from './SensorCard';
 import { assets, liveDataSensors } from '../../../../assets/assets';
-import { color } from 'chart.js/helpers';
+import MyChart from '../../../../components/MyChart';
 
 
 const DetailsCard = ({ sensor, setLiveDetailsId, selectedSensors, groupMode, groupToggleSensor }) => {
-  const sensorData = liveDataSensors.find(sensor => sensor.id === sensor.id);
   const [apiData, setApiData] = useState([]);
   const [online, setOnline] = useState()
   const [lastMeasure, setLastMeasure] = useState()
+  const [serverConnectOk,setServerConnectOk] = useState()
 
-  ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    PointElement,
-    LineElement,
-    ArcElement,
-    Tooltip,
-    TimeScale
-  );
+
+  const dataProbingMinutes = 5
 
   const dataFillNull = (data) => {
-    const interval = 1 / 6 * 60 * 1000
-    const halfInterval = interval / 2
+    
+    const intervalMs = dataProbingMinutes * 60 * 1000
+    const halfIntervalMs = intervalMs / 2
     const nowTimestamp = Date.now()
-    let startTimestamp = (nowTimestamp - 0.1 * 60 * 60 * 1000)
+    
+    let startTimestamp = (nowTimestamp - 24 * 60 * 60 * 1000)
     let calculatedData = [];
     let foundData;
 
-    startTimestamp = startTimestamp - (startTimestamp % interval)
+    startTimestamp = startTimestamp - (startTimestamp % intervalMs)
     data = data.map(d => ({ ...d, timestamp: d.timestamp * 1000 }));
 
 
-    for (let i = startTimestamp; i < nowTimestamp; i += interval) {
-      foundData = data.find(d => (d.timestamp >= (i - halfInterval) && d.timestamp <= (i + halfInterval)))
+    for (let i = startTimestamp; i < nowTimestamp; i += intervalMs) {
+      foundData = data.find(d => (d.timestamp >= (i - halfIntervalMs) && d.timestamp <= (i + halfIntervalMs)))
       calculatedData.push({
         timestamp: foundData ? foundData.timestamp : i,
         value: foundData ? foundData.value : null
@@ -81,81 +63,30 @@ const DetailsCard = ({ sensor, setLiveDetailsId, selectedSensors, groupMode, gro
   }, [apiData])
 
   useEffect(() => {
-    const fetchData = () => {
-      axios
-        .get(`http://127.0.0.1:8000/api/devices/get-data-24h/${sensor.id}`)
-        .then((res) => {
-          setApiData(dataFillNull(res.data))
-        })
-        .catch((err) => console.error(err));
-
+    const fetchData = async () => {
+      try{
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${sensor.id}`)
+        setApiData(dataFillNull(res.data))
+        setServerConnectOk(true)
+      }
+      catch(error){
+        console.error(error)
+        setApiData([])
+        setServerConnectOk(false)
+      }
     };
 
     // pierwsze pobranie od razu
     fetchData();
 
     // ustaw polling co 5 sekund
-    const interval = setInterval(fetchData, 3000);
+    const funcInterval = setInterval(fetchData, (dataProbingMinutes+0.1)*60*1000 );//dataProbingMinutes+0.1)*60*1000 
 
     // cleanup
-    return () => clearInterval(interval);
+    return () => clearInterval(funcInterval);
   }, []);
 
 
-
-
-  const chartData = {
-    labels: apiData.map(a => a.timestamp),
-
-    datasets: [
-      {
-        // lineTension: 0.4,
-        data: apiData.map(a => a.value),
-        backgroundColor: 'rgb(255,255,255)',
-        borderColor: "rgb(46, 176, 171)",
-        pointRadius: 0
-      }
-    ]
-  }
-
-  const chartOptions = {
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: "hour"
-        },
-        grid: {
-          display: false,
-
-        },
-        title: {
-          display: true,
-          text: 'Godzina',
-          color: "rgb(210, 210, 210)"
-        },
-        ticks: {
-          color: "rgb(210, 210, 210)",
-        }
-
-      },
-      y: {
-        grid: {
-          color: "rgb(138, 138, 138)",
-
-        },
-        ticks: {
-          color: "rgb(210, 210, 210)",
-        }
-      }
-    }
-  }
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  console.log(sensor.value)
   return (
     <motion.div
       className='flex flex-col bg-gray-800 rounded-xl mt-10 py-5 sm:px-10 relative'
@@ -175,11 +106,7 @@ const DetailsCard = ({ sensor, setLiveDetailsId, selectedSensors, groupMode, gro
       </h2>
 
       <div className='flex flex-wrap xl:flex-nowrap px-5 items-center justify-center gap-5'>
-        <div className=' flex-auto min-w-[200px] sm:min-w-[280px] pb-5 pl-5 pr-5 bg-gray-600 rounded-xl'>
-          <h2 className='text-center text-gray-300 text-2xl mb-10 mt-3'>Dane z ostatniej doby</h2>
-          <Line options={chartOptions} data={chartData} />
-        </div>
-
+        <MyChart data={apiData} title={"Dane z ostaniej doby"} serverConnectOk={serverConnectOk}/>
         <SensorCard
           data={{
             id: sensor.id,

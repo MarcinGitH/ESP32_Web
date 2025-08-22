@@ -18,8 +18,8 @@ const SensorCard = ({ data, selectedSensors, groupMode, liveDetailsId, groupTogg
       onClick={handleClick}
     >
       <span className='text-gray-300 text-center block mt-2 px-2 sm:px-4 font-bold text-md sm:text-xl'>{data.name}</span>
-      <span className='block text-center text-gray-300 mt-6 sm:mt-20 font-["Tourney"] text-6xl sm:text-8xl'>{data.value}</span>
-      <span className={`block text-center text-gray-400 mt-6 sm:mt-20 text-2xl sm:text-3xl ${data.online ? "text-green-600" : "text-red-900"}`}>
+      <span className='block text-center text-gray-300 mt-6 sm:mt-20 font-["Tourney"] text-6xl sm:text-8xl'>{data.online ? data.value : "--"}</span>
+      <span className={`block text-center text-gray-400 mt-6 sm:mt-20 text-2xl sm:text-3xl ${data.online ? "text-green-600" : "text-gray-200"}`}>
         {data.online ? "Online" : "Offline"}
       </span>
     </div>

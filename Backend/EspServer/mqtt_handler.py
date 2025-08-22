@@ -1,6 +1,5 @@
 import json
 import paho.mqtt.client as mqtt
-from django.core.cache import cache
 from datetime import datetime
 from .models import Device, Sensor, SensorData
 from django.contrib.auth.models import User

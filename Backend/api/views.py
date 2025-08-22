@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import DeviceDataSerializer
-import redis
+
 from datetime import datetime, timedelta
 from EspServer.models import SensorData
 from django.utils import timezone
