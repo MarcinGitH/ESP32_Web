@@ -83,7 +83,8 @@ const MyChart = ({data,title,filters,serverConnectOk}) => {
             unit: "hour",
             displayFormats: {
                           hour: 'HH',
-                          minute: 'HH:mm'
+                          minute: 'HH:mm',
+                          second: 'HH:mm:ss'
                       }
           },
           grid: {
@@ -115,7 +116,10 @@ const MyChart = ({data,title,filters,serverConnectOk}) => {
         zoom: {
           pan:{
             enabled:true,
-            modifierKey:'ctrl'
+            modifierKey:'ctrl',
+            onPan:({chart})=>{
+              setChartZoomed(true)
+            }
           },
           zoom: {
             wheel: {
@@ -135,8 +139,13 @@ const MyChart = ({data,title,filters,serverConnectOk}) => {
             onZoom: ({chart}) => {
             const xScale = chart.scales.x;
             const range = xScale.max - xScale.min;
+            
+            // Jeśli zakres < 1.5 minuty - [hh:mm:ss]
+            if (range < 1 * 60 * 1000) {
+              xScale.options.time.unit = 'second';
+            } 
             // Jeśli zakres < 1.5 godziny - [hh:mm]
-            if (range < 1.5*60 * 60 * 1000) {
+            else if (range < 1.5*60 * 60 * 1000) {
               xScale.options.time.unit = 'minute';
             } 
             else {
@@ -165,7 +174,7 @@ const MyChart = ({data,title,filters,serverConnectOk}) => {
           }
           {chartZoomed &&
           <button type='button' 
-                  className='absolute top-10 right-5 text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold'
+                  className='absolute top-10 right-5 text-xs lg:text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold'
                   onClick={()=>resetZoom()}
                   >Zoom reset</button>
           }
