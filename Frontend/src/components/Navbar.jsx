@@ -8,25 +8,25 @@ import { div, li } from 'framer-motion/client'
 const Navbar = () => {
 
     const navbarLinks = [
-        {linkText : "O projekcie", path: "/"},
-        {linkText : "Jak zacząć", path: "/how-to-start"},
-        {linkText : "Moje urządzenia", path: "/my-devices"},
-        {linkText : "Pobierz", path: "/download"},
+        { linkText: "O projekcie", path: "/" },
+        { linkText: "Jak zacząć", path: "/how-to-start" },
+        { linkText: "Moje urządzenia", path: "/my-devices" },
+        { linkText: "Pobierz", path: "/download" },
     ];
 
-    const [menuBarShow,setMenuBarShow] = useState(false)
+    const [menuBarShow, setMenuBarShow] = useState(false)
 
-   
+
     return (
         <div>
             <div className='w-full h-30 px-5 sm:px-15 2lg:px-30 flex justify-center fixed top-0 z-50 bg-gray-950'>
                 <div className='w-300 h-full flex items-center justify-between border-b-2 border-cyan-400 shadow-[0px_40px_53px_-20px_rgba(38,198,218,_0.1)]'>
-                    <NavLink to={"/"}><img src={assets.logo} alt="Logo firmy ESP32" className="h-30 w-auto invert"/></NavLink>
+                    <NavLink to={"/"}><img src={assets.logo} alt="Logo firmy ESP32" className="h-30 w-auto invert" /></NavLink>
                     <div className='hidden lg:block px-8 py-2 border-2 bg-black border-cyan-400 rounded-full shadow-2xl shadow-cyan-400 '>
                         <ul className='flex gap-8 items-center'>
-                            {navbarLinks.map((link,linkID)=>(
+                            {navbarLinks.map((link, linkID) => (
                                 <li key={linkID}><NavLink to={link.path} className={({ isActive }) =>
-                                isActive ? "nav-link nav-link-active" : "nav-link"}>{link.linkText}</NavLink></li>
+                                    isActive ? "nav-link nav-link-active" : "nav-link"}>{link.linkText}</NavLink></li>
                             ))}
                         </ul>
                     </div>
@@ -36,16 +36,16 @@ const Navbar = () => {
                             <NavLink to={"/register"}><li className='login-button'>Zarejestruj się</li></NavLink>
                         </ul>
                     </div>
-                    <img className='lg:hidden h-1/2 cursor-pointer' onClick={()=>setMenuBarShow(!menuBarShow)} src={assets.menuBar} alt="" />
+                    <img className='lg:hidden h-1/2 cursor-pointer' onClick={() => setMenuBarShow(!menuBarShow)} src={assets.menuBar} alt="" />
                 </div>w
             </div>
 
             {/* Menu mobilne */}
             <div className={`bg-gray-600 z-30 top-30 bottom-0 right-0 overflow-hidden transition-all  ${menuBarShow ? "fixed w-full h-screen opacity-100" : "fixed w-0 h-0 opacity-0"}`}>
                 <ul className='flex pt-10 items-center gap-5 justify-between flex-col'>
-                    {navbarLinks.map((link,linkID)=>(
-                        <li key={linkID} className='w-1/2 text-center'><NavLink to={link.path} onClick={()=>setMenuBarShow(false)} className={({ isActive }) =>
-                                isActive ? "nav-link-mobile nav-link-mobile-active" : "nav-link-mobile"}>{link.linkText}</NavLink></li>
+                    {navbarLinks.map((link, linkID) => (
+                        <li key={linkID} className='w-1/2 text-center'><NavLink to={link.path} onClick={() => setMenuBarShow(false)} className={({ isActive }) =>
+                            isActive ? "nav-link-mobile nav-link-mobile-active" : "nav-link-mobile"}>{link.linkText}</NavLink></li>
                     ))}
                 </ul>
             </div>

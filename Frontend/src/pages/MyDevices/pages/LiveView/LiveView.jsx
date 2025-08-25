@@ -4,6 +4,8 @@ import DetailsCard from './DetailsCard';
 import SensorGroup from './SensorGroup';
 import { liveDataSensors } from '../../../../assets/assets';
 import { motion } from 'framer-motion';
+import DetailsCard2 from './DetailsCard2';
+import { Navigate } from 'react-router-dom';
 
 const LiveView = () => {
   const [groupMode, setGroupMode] = useState(false);
@@ -89,13 +91,14 @@ const LiveView = () => {
         viewport={{ once: true }}
       >
         {liveDetailsId > -1 ? (
-          <DetailsCard
-            sensor={liveDataSensors.find(d => d.id === liveDetailsId)}
-            setLiveDetailsId={setLiveDetailsId}
-            selectedSensors={selectedSensors}
-            groupMode={groupMode}
-            groupToggleSensor={groupToggleSensor}
-          />
+          // <DetailsCard
+          //   sensor={liveDataSensors.find(d => d.id === liveDetailsId)}
+          //   setLiveDetailsId={setLiveDetailsId}
+          //   selectedSensors={selectedSensors}
+          //   groupMode={groupMode}
+          //   groupToggleSensor={groupToggleSensor}
+          // />
+          <Navigate to={`../../../details-card/${liveDetailsId}`} />
         ) : (
           <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'>
             {groupBar}

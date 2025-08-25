@@ -31,11 +31,20 @@ SECRET_KEY = 'django-insecure-il5^l9k*ljphim-8dxb=&^3ki!h%cbwhccctj_aatzen%+sw=-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "192.168.0.14",
+    "192.168.18.11",
 ]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://127.0.0.1:5173",
+#     "http://0.0.0.0",
+#     "http://192.168.0.14:5173",
+#     "http://192.168.0.15:5173",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
@@ -43,7 +52,6 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 }
-
 
 
 # Application definition
