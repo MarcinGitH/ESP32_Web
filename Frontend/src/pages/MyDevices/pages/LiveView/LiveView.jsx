@@ -1,17 +1,43 @@
 
-import React, { useState } from 'react';
-import DetailsCard from './DetailsCard';
-import SensorGroup from './SensorGroup';
+import React, { useEffect, useState } from 'react';
 import { liveDataSensors } from '../../../../assets/assets';
 import { motion } from 'framer-motion';
-import DetailsCard2 from './DetailsCard2';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import SensorCard from './SensorCard';
+import axios from 'axios';
+import { div } from 'framer-motion/client';
 
 const LiveView = () => {
-  const [groupMode, setGroupMode] = useState(false);
-  const [selectedSensors, setSelectedSensors] = useState([]);
-  const [groupName, setGroupName] = useState("");
-  const [liveDetailsId, setLiveDetailsId] = useState(-1);
+  const [groupMode, setGroupMode] = useState(false)
+  const [selectedSensors, setSelectedSensors] = useState([])
+  const [groupName, setGroupName] = useState("")
+  const [allSensors,setAllSensors] = useState([])
+  const [serverConnectOk,setServerConnectOk] = useState(false)
+  const navigate=useNavigate()
+
+
+
+  useEffect(()=>{
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-all-sensors`)
+
+        setAllSensors(res.data)
+        setServerConnectOk(true)
+      }
+      catch (error) {
+        console.error(error)
+        setAllSensors([])
+        setServerConnectOk(false)
+      }
+    };
+
+    fetchData()
+
+    const interval = setInterval(fetchData, 5000);
+    
+    return ()=> clearInterval(interval)
+  },[])
 
   const groupToggleSensor = (id) => {
     setSelectedSensors(prev =>
@@ -25,16 +51,32 @@ const LiveView = () => {
     setGroupName("");
   };
 
+  
   const confirmGroup = () => {
-    liveDataSensors.forEach(data => {
-      if (selectedSensors.includes(data.id)) data.groupName = groupName;
-    });
-    cancelGroup();
+    const data = selectedSensors.map(s=>({id:s,group_name:groupName}))
+    try{
+      axios.post("http://127.0.0.1:8000/api/devices/update-sensors-group",data)
+    }
+    catch{
+      console.error(err)
+    }
+    setAllSensors(prev =>
+    prev.map(sensor =>
+    selectedSensors.includes(sensor.id)
+      ? { ...sensor, group_name: groupName }
+      : sensor
+  )
+  );
+  cancelGroup();
   };
 
-  const groups = [
-    ...new Set(liveDataSensors.filter(d => d.groupName !== "Inne").map(d => d.groupName)),
-    ...(liveDataSensors.some(d => d.groupName === "Inne") ? ["Inne"] : [])
+  const handleCardClick = (id) => (
+    groupMode ? groupToggleSensor(id) : navigate(`../../../details-card/${id}`)
+  )
+
+    const groups = [
+    ...new Set(allSensors.filter(d => d.group_name !== "Inne").map(d => d.group_name)),
+    ...(allSensors.some(d => d.group_name === "Inne") ? ["Inne"] : [])
   ];
 
   const groupBar = (
@@ -89,33 +131,35 @@ const LiveView = () => {
         transition={{ duration: 0.5 }}
         animate={{ opacity: 1 }}
         viewport={{ once: true }}
-      >
-        {liveDetailsId > -1 ? (
-          // <DetailsCard
-          //   sensor={liveDataSensors.find(d => d.id === liveDetailsId)}
-          //   setLiveDetailsId={setLiveDetailsId}
-          //   selectedSensors={selectedSensors}
-          //   groupMode={groupMode}
-          //   groupToggleSensor={groupToggleSensor}
-          // />
-          <Navigate to={`../../../details-card/${liveDetailsId}`} />
-        ) : (
+      > {!serverConnectOk ?
+        <div className='bg-gray-800 rounded-2xl'>
+          <h2 className='text-gray-300 text-center text-3xl py-10'>Brak połączenia z serwerem</h2>
+        </div>
+        :
           <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'>
             {groupBar}
-
-            {groups.map(group => (
-              <SensorGroup
-                key={group}
-                group={group}
-                selectedSensors={selectedSensors}
-                groupMode={groupMode}
-                groupToggleSensor={groupToggleSensor}
-                liveDetailsId={liveDetailsId}
-                setLiveDetailsId={setLiveDetailsId}
-              />
+            {groups.map((group,index) => (
+              <div key={index}>
+                <h2 className='text-gray-300 text-3xl font-bold my-10 w-full text-center bg-gray-700 rounded-md'>{group}</h2>
+                <div className='flex flex-wrap pb-10 px-10 gap-10 justify-center'>
+                  {allSensors.filter(d => d.group_name === group).map((d) => (
+                  <SensorCard
+                    key={d.id}
+                    sensorData={{
+                      id : d.id,
+                      name:d.name,
+                      online: d.actual_value != null,
+                      value: d.actual_value,
+                      }}
+                    hoverEffect = {true}
+                    selected = {selectedSensors.includes(d.id)}
+                    onSelect = {handleCardClick}
+                  />
+                ))}
+                </div>
+              </div>
             ))}
-          </div>
-        )}
+          </div>}
       </motion.div>
     </div>
   );

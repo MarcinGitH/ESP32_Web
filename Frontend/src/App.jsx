@@ -10,7 +10,7 @@ import Download from './pages/Download/Download'
 import LiveView from './pages/MyDevices/pages/LiveView/LiveView'
 import Dashboard from './pages/MyDevices/pages/Dashboard/Dashboard'
 import DeviceConf from './pages/MyDevices/pages/DeviceConf/DeviceConf'
-import DetailsCard2 from './pages/MyDevices/pages/LiveView/DetailsCard2'
+import DetailsCard from './pages/MyDevices/pages/LiveView/DetailsCard'
 
 
 const App = () => {
@@ -34,7 +34,7 @@ const App = () => {
                     </Route>
                     <Route path='download' element={<Download />} />
                 </Route>
-                <Route path='/details-card/:sensorId' element={<DetailsCard2 />} />
+                <Route path='/details-card/:sensorId' element={<DetailsCard />} />
             </Routes>
 
         </div>

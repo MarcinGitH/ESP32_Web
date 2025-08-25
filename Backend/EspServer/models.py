@@ -18,13 +18,12 @@ class Device(models.Model):
 class Sensor(models.Model):
     device = models.ForeignKey(
         Device, on_delete=models.CASCADE, related_name='sensors')
-    sensor_id = models.CharField(max_length=255)
     name = models.CharField(max_length=100, default="sensor name")
     group_name = models.CharField(max_length=100, default="Inne")
 
-    class Meta:
-        # sensor_id unikalny w obrębie device
-        unique_together = ('device', 'sensor_id')
+    # class Meta:
+    #     # sensor_id unikalny w obrębie device
+    #     unique_together = ('device', 'sensor_id')
 
     def __str__(self):
         return f"{self.name} ({self.sensor_id})"
