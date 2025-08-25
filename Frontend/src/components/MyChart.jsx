@@ -64,17 +64,21 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
 
     datasets: [
       {
-        tension: 0.2,
-        cubicInterpolationMode: 'monotone',
+        // tension: 1,
+        // cubicInterpolationMode: 'monotone',
         data: data.map(a => a.value),
         backgroundColor: 'rgb(255,255,255)',
         borderColor: "rgb(46, 176, 171)",
-        pointRadius: 0
+        pointRadius: 0,
+
       }
     ]
   }), [data])
 
   const chartOptions = useMemo(() => ({
+
+    // tension: 0.2,
+    // cubicInterpolationMode: 'monotone',
     responsive: true,
     maintainAspectRatio: false,
     scales: {

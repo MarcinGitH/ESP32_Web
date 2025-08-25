@@ -44,7 +44,7 @@ def on_message(client, userdata, msg):
         # 2. Pobierz lub utwórz sensor
         sensor, created_sensor = Sensor.objects.get_or_create(
             device=device,
-            sensor_id=sensorMQTT['sensor_id'],
+            id=sensorMQTT['sensor_id'],
             defaults={"name": "sensor_name"}
         )
 

@@ -11,16 +11,16 @@ const LiveView = () => {
   const [groupMode, setGroupMode] = useState(false)
   const [selectedSensors, setSelectedSensors] = useState([])
   const [groupName, setGroupName] = useState("")
-  const [allSensors,setAllSensors] = useState([])
-  const [serverConnectOk,setServerConnectOk] = useState(false)
-  const navigate=useNavigate()
+  const [allSensors, setAllSensors] = useState([])
+  const [serverConnectOk, setServerConnectOk] = useState(false)
+  const navigate = useNavigate()
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-all-sensors`)
+        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-all-sensors`)
 
         setAllSensors(res.data)
         setServerConnectOk(true)
@@ -35,9 +35,9 @@ const LiveView = () => {
     fetchData()
 
     const interval = setInterval(fetchData, 5000);
-    
-    return ()=> clearInterval(interval)
-  },[])
+
+    return () => clearInterval(interval)
+  }, [])
 
   const groupToggleSensor = (id) => {
     setSelectedSensors(prev =>
@@ -51,30 +51,30 @@ const LiveView = () => {
     setGroupName("");
   };
 
-  
+
   const confirmGroup = () => {
-    const data = selectedSensors.map(s=>({id:s,group_name:groupName}))
-    try{
-      axios.post("http://127.0.0.1:8000/api/devices/update-sensors-group",data)
+    const data = selectedSensors.map(s => ({ id: s, group_name: groupName }))
+    try {
+      axios.post("http://192.168.0.14:8000/api/devices/update-sensors-group", data)
     }
-    catch{
+    catch {
       console.error(err)
     }
     setAllSensors(prev =>
-    prev.map(sensor =>
-    selectedSensors.includes(sensor.id)
-      ? { ...sensor, group_name: groupName }
-      : sensor
-  )
-  );
-  cancelGroup();
+      prev.map(sensor =>
+        selectedSensors.includes(sensor.id)
+          ? { ...sensor, group_name: groupName }
+          : sensor
+      )
+    );
+    cancelGroup();
   };
 
   const handleCardClick = (id) => (
     groupMode ? groupToggleSensor(id) : navigate(`../../../details-card/${id}`)
   )
 
-    const groups = [
+  const groups = [
     ...new Set(allSensors.filter(d => d.group_name !== "Inne").map(d => d.group_name)),
     ...(allSensors.some(d => d.group_name === "Inne") ? ["Inne"] : [])
   ];
@@ -136,30 +136,30 @@ const LiveView = () => {
           <h2 className='text-gray-300 text-center text-3xl py-10'>Brak połączenia z serwerem</h2>
         </div>
         :
-          <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'>
-            {groupBar}
-            {groups.map((group,index) => (
-              <div key={index}>
-                <h2 className='text-gray-300 text-3xl font-bold my-10 w-full text-center bg-gray-700 rounded-md'>{group}</h2>
-                <div className='flex flex-wrap pb-10 px-10 gap-10 justify-center'>
-                  {allSensors.filter(d => d.group_name === group).map((d) => (
+        <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'>
+          {groupBar}
+          {groups.map((group, index) => (
+            <div key={index}>
+              <h2 className='text-gray-300 text-3xl font-bold my-10 w-full text-center bg-gray-700 rounded-md'>{group}</h2>
+              <div className='flex flex-wrap pb-10 px-10 gap-10 justify-center'>
+                {allSensors.filter(d => d.group_name === group).map((d) => (
                   <SensorCard
                     key={d.id}
                     sensorData={{
-                      id : d.id,
-                      name:d.name,
+                      id: d.id,
+                      name: d.name,
                       online: d.actual_value != null,
                       value: d.actual_value,
-                      }}
-                    hoverEffect = {true}
-                    selected = {selectedSensors.includes(d.id)}
-                    onSelect = {handleCardClick}
+                    }}
+                    hoverEffect={true}
+                    selected={selectedSensors.includes(d.id)}
+                    onSelect={handleCardClick}
                   />
                 ))}
-                </div>
               </div>
-            ))}
-          </div>}
+            </div>
+          ))}
+        </div>}
       </motion.div>
     </div>
   );
