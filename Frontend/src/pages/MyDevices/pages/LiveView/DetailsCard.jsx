@@ -92,11 +92,12 @@ const DetailsCard = () => {
 
     if (apiData.data.length > 0) {
       value = apiData.data[apiData.data.length - 1].value
-      setLastMeasure(value.toFixed(2));
+
     }
 
     if (value) {
       setOnline(true)
+      setLastMeasure(value.toFixed(2));
     }
     else {
       setOnline(false)

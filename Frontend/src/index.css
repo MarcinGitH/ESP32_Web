@@ -45,6 +45,10 @@
   .sidebar-link-active {
     @apply pointer-events-none bg-gray-700 text-gray-100 relative after:content-[""] after:absolute after:bottom-0 after:h-[2px] after:bg-white after:left-0 after:w-full
   }
+
+  .button {
+    @apply text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold
+  }
 }
 
 @layer utilities {

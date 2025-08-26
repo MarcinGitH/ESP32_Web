@@ -11,6 +11,8 @@ import LiveView from './pages/MyDevices/pages/LiveView/LiveView'
 import Dashboard from './pages/MyDevices/pages/Dashboard/Dashboard'
 import DeviceConf from './pages/MyDevices/pages/DeviceConf/DeviceConf'
 import DetailsCard from './pages/MyDevices/pages/LiveView/DetailsCard'
+import AddNewDevice from './pages/MyDevices/pages/DeviceConf/AddNewDevice'
+import ConfigureDevice from './pages/MyDevices/pages/DeviceConf/ConfigureDevice'
 
 
 const App = () => {
@@ -31,6 +33,8 @@ const App = () => {
                         <Route path='live-view' element={<LiveView />} />
                         <Route path='dashboards' element={<Dashboard />} />
                         <Route path='device-conf' element={<DeviceConf />} />
+                        <Route path='device-conf/add-new' element={<AddNewDevice />} />
+                        <Route path='device-conf/configure-device/:deviceId' element={<ConfigureDevice />} />
                     </Route>
                     <Route path='download' element={<Download />} />
                 </Route>

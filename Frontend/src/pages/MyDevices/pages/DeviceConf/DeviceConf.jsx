@@ -1,8 +1,85 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import axios from 'axios';
+
+import { motion } from 'framer-motion';
+import { div, span } from 'framer-motion/client';
+import { useNavigate } from 'react-router-dom';
 
 const DeviceConf = () => {
+  const [devicesList, setDevicesList] = useState([])
+  const [serverConnectOk, setServerConnectOk] = useState([])
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-devices`)
+
+        setDevicesList(res.data)
+        setServerConnectOk(true)
+      }
+      catch (error) {
+        console.error(error)
+        setDevicesList([])
+        setServerConnectOk(false)
+      }
+    };
+
+    fetchData()
+
+    const interval = setInterval(fetchData, 5000);
+
+    return () => clearInterval(interval)
+
+  }, [])
+
   return (
-    <div>DeviceConf</div>
+    <div className='w-full h-auto'>
+      <motion.div
+        className='flex flex-col justify-center px-1 sm:px-20 mt-10'
+        initial={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        animate={{ opacity: 1 }}
+        viewport={{ once: true }}
+      >
+        <div className='bg-gray-800 rounded-xl my-10 px-5 sm:px-10 max-w-400'>
+          <div className='flex flex-col pb-10'>
+            {/* Dodaj urzadzenie */}
+            <div>
+              <button type='button'
+                className='button my-5'
+                onClick={() => navigate("./add-new")}>Dodaj urządzenie</button>
+            </div>
+            {/* Lista urzadzen */}
+            <div>
+              {!devicesList.length ?
+                <div>
+                  <h2 className='text-gray-400 text-4xl mb-10'>Brak skonfigurowanych urządzeń</h2>
+                </div>
+                :
+                <div>
+                  {devicesList.map((device, id) => (
+                    <div key={id}
+                      className='flex flex-col lg:flex-row items-center justify-between gap-4 bg-gray-700 px-10 my-5 py-8 rounded-2xl cursor-pointer hover:bg-gray-600'
+                      onClick={() => navigate(`./configure-device/${device.device_id}`)}>
+                      <div>
+                        <h2 className='text-gray-300 text-2xl lg:text-2xl font-bold text-center'>{device.name}</h2>
+                      </div>
+                      <div>
+                        <h3 className='text-gray-300 px-20 text-xl text-center'>Skonfigurowane czujniki: {device.sensors.length}</h3>
+                      </div>
+                      <div>
+                        <span className='text-gray-300 text-xl'>Status: {device.online ? <span className='text-green-600 text-xl'>Online</span> : <span className='text-gray-200 text-xl'>Offline</span>}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>}
+            </div>
+
+          </div>
+        </div >
+      </motion.div >
+    </div >
   )
 }
 

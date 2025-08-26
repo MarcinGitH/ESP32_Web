@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import getData24h,userSensorsActual,updateSensorsGroup
+from .views import getData24h, userSensorsActual, updateSensorsGroup, getDevices
 
 urlpatterns = [
     path("devices/get-data-24h/<int:sensorId>", getData24h),
     path("devices/get-all-sensors", userSensorsActual),
     path("devices/update-sensors-group", updateSensorsGroup),
+    path("devices/get-devices", getDevices),
 ]

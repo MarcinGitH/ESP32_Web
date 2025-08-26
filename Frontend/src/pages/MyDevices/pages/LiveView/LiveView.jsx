@@ -83,7 +83,7 @@ const LiveView = () => {
     <div className='flex items-center justify-center pt-5 sm:justify-end sm:pr-20'>
       {!groupMode && (
         <button
-          className='text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold'
+          className='button'
           onClick={() => setGroupMode(true)}
           type='button'
         >
