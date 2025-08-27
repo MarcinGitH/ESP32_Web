@@ -13,7 +13,7 @@ const DeviceConf = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-devices`)
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-devices`)
 
         setDevicesList(res.data)
         setServerConnectOk(true)
@@ -34,9 +34,9 @@ const DeviceConf = () => {
   }, [])
 
   return (
-    <div className='w-full h-auto'>
+    <div className=''>
       <motion.div
-        className='flex flex-col justify-center px-1 sm:px-20 mt-10'
+        className='px-1 sm:px-20 mt-10 w-full h-auto'
         initial={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
         animate={{ opacity: 1 }}
@@ -52,12 +52,16 @@ const DeviceConf = () => {
             </div>
             {/* Lista urzadzen */}
             <div>
-              {!devicesList.length ?
-                <div>
-                  <h2 className='text-gray-400 text-4xl mb-10'>Brak skonfigurowanych urządzeń</h2>
-                </div>
+              {!serverConnectOk ?
+                  <div>
+                    <h2 className='text-gray-400 text-4xl mb-10'>Brak połączenia z serwerem</h2>
+                  </div>
+                : !devicesList.length ?
+                  <div>
+                   <h2 className='text-gray-400 text-4xl mb-10'>Brak skonfigurowanych urządzeń</h2>
+                  </div>
                 :
-                <div>
+                <div className=''>
                   {devicesList.map((device, id) => (
                     <div key={id}
                       className='flex flex-col lg:flex-row items-center justify-between gap-4 bg-gray-700 px-10 my-5 py-8 rounded-2xl cursor-pointer hover:bg-gray-600'

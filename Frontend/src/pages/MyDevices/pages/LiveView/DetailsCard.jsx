@@ -116,7 +116,7 @@ const DetailsCard = () => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-data-24h/${sensorId}`)
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${sensorId}`)
         const clearedData = dataChartPrepare(res.data.data)
         setApiData({
           ...res.data,

@@ -1,13 +1,14 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DevicesSerializer
+from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DevicesSerializer,AddDeviceTokenSerializer
 from rest_framework import status
 
 from datetime import datetime, timedelta
-from EspServer.models import Sensor, Device
+from EspServer.models import Sensor, Device,AddDeviceToken,User
 from django.utils import timezone
 from datetime import timedelta
+import secrets
 
 
 @api_view(['GET'])
@@ -62,4 +63,28 @@ def getDevices(request):
     user = "marcin"
     devices = Device.objects.filter(user__username=user)
     serializer = DevicesSerializer(devices, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def getAddDeviceToken(request):
+    username = "marcin"
+    token_validity_min = 1
+
+    # usuwanie starych tokenow
+    AddDeviceToken.objects.filter(expires_at__lt=timezone.now()).delete()
+
+    user = User.objects.get(username=username)
+    device_token = AddDeviceToken.objects.filter(
+        user=user,
+        expires_at__gt = timezone.now()
+    ).first()
+    if(not device_token):
+        device_token = AddDeviceToken.objects.create(
+            user=user,
+            token = secrets.token_urlsafe(8),
+            expires_at = timezone.now() + timedelta(minutes=token_validity_min)
+        )
+    
+    serializer = AddDeviceTokenSerializer(device_token)
     return Response(serializer.data)

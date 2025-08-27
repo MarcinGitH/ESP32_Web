@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from EspServer.models import SensorData, Sensor, Device
+from EspServer.models import SensorData, Sensor, Device,AddDeviceToken
 from django.utils import timezone
 from datetime import timedelta
 
@@ -68,3 +68,17 @@ class DevicesSerializer(serializers.ModelSerializer):
             sensor__device=obj,
             timestamp__gte=time_threshold
         ).exists()
+
+class AddDeviceTokenSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
+    expires_at = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AddDeviceToken
+        fields = ["token", "created_at", "expires_at"]
+
+    def get_created_at(self, obj):
+        return int(obj.created_at.timestamp()*1000)
+    
+    def get_expires_at(self, obj):
+        return int(obj.expires_at.timestamp()*1000)
