@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { liveDataSensors } from '../../../../assets/assets';
+
 import { motion } from 'framer-motion';
 import { Navigate, useNavigate } from 'react-router-dom';
 import SensorCard from './SensorCard';

@@ -5,7 +5,7 @@ import axios from "axios";
 
 import { motion } from 'framer-motion';
 import SensorCard from './SensorCard';
-import { assets, liveDataSensors } from '../../../../assets/assets';
+import { assets } from '../../../../assets/assets';
 import MyChart from '../../../../components/MyChart';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
@@ -48,6 +48,7 @@ const DetailsCard = () => {
       return { timestamp: p.timestamp, value: acc / weight };
     });
 
+
     return result;
   }
 
@@ -81,33 +82,13 @@ const DetailsCard = () => {
     }
     data.sort((a, b) => a.timestamp - b.timestamp);
 
-    console.log(data)
-    return (gaussianSmooth(data, 10))
-    // return (data)
+    return (gaussianSmooth(data, 5))
+
+
   }
 
 
-  const updateCard = () => {
-    let value
 
-    if (apiData.data.length > 0) {
-      value = apiData.data[apiData.data.length - 1].value
-
-    }
-
-    if (value) {
-      setOnline(true)
-      setLastMeasure(value.toFixed(2));
-    }
-    else {
-      setOnline(false)
-    }
-
-  }
-
-  useEffect(() => {
-    updateCard()
-  }, [apiData])
 
   useEffect(() => {
 
@@ -117,7 +98,19 @@ const DetailsCard = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${sensorId}`)
+
         const clearedData = dataChartPrepare(res.data.data)
+        if (clearedData) {
+          const tempLastMeasure = res.data.data[res.data.data.length - 1]?.value
+          setLastMeasure(tempLastMeasure)
+          if (tempLastMeasure) {
+            setOnline(true)
+          }
+          else {
+            setOnline(false)
+          }
+        }
+
         setApiData({
           ...res.data,
           data: clearedData
