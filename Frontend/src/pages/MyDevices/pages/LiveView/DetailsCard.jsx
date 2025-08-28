@@ -13,7 +13,6 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 const DetailsCard = () => {
   const { sensorId } = useParams()
   const [apiData, setApiData] = useState({ data: [] });
-  const [online, setOnline] = useState()
   const [lastMeasure, setLastMeasure] = useState()
   const [serverConnectOk, setServerConnectOk] = useState()
   const navigate = useNavigate()
@@ -52,7 +51,7 @@ const DetailsCard = () => {
     return result;
   }
 
-  const dataChartPrepare = (data) => {
+  const dataFillNull = (data) => {
 
     const intervalMs = dataProbingMinutes * 60 * 1000
     const halfIntervalMs = intervalMs / 2
@@ -82,7 +81,8 @@ const DetailsCard = () => {
     }
     data.sort((a, b) => a.timestamp - b.timestamp);
 
-    return (gaussianSmooth(data, 5))
+    // return (gaussianSmooth(data, 5))
+    return (data)
 
 
   }
@@ -98,18 +98,9 @@ const DetailsCard = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${sensorId}`)
-
-        const clearedData = dataChartPrepare(res.data.data)
-        if (clearedData) {
-          const tempLastMeasure = res.data.data[res.data.data.length - 1]?.value
-          setLastMeasure(tempLastMeasure)
-          if (tempLastMeasure) {
-            setOnline(true)
-          }
-          else {
-            setOnline(false)
-          }
-        }
+        const dataWithNulls = dataFillNull(res.data.data)
+        const clearedData = gaussianSmooth(dataWithNulls,5)
+        setLastMeasure(res.data.actual_value)
 
         setApiData({
           ...res.data,
@@ -161,7 +152,7 @@ const DetailsCard = () => {
             id: sensorId,
             name: apiData.name,
             value: lastMeasure,
-            online: online,
+            online: lastMeasure ? true : false,
 
           }}
           hoverEffect={false}

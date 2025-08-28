@@ -74,12 +74,12 @@ def firstConfig(payload):
     user_token = AddDeviceToken.objects.filter(user=user).first()
     if not user_token or not user_token.is_valid():
         print("Token nieważny")
-        sendStatus(ok=False)
+        sendStatus(False)
         return
 
     if user_token.token != token:
         print("Token się nie zgadza")
-        sendStatus(ok=False)
+        sendStatus(False)
         return
 
     device, created = Device.objects.get_or_create(
@@ -91,7 +91,7 @@ def firstConfig(payload):
         device.name = device_name
         device.save()
 
-    sendStatus(ok=True)
+    sendStatus(True)
 
 
 def sendStatus(ok):

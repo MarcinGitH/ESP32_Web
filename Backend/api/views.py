@@ -1,11 +1,11 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DevicesSerializer,AddDeviceTokenSerializer
+from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DeviceSerializer,AddDeviceTokenSerializer
 from rest_framework import status
 
 from datetime import datetime, timedelta
-from EspServer.models import Sensor, Device,AddDeviceToken,User
+from EspServer.models import Sensor, Device,AddDeviceToken,User,DeviceConfig
 from django.utils import timezone
 from datetime import timedelta
 import secrets
@@ -62,7 +62,16 @@ def updateSensorsGroup(request):
 def getDevices(request):
     user = "marcin"
     devices = Device.objects.filter(user__username=user)
-    serializer = DevicesSerializer(devices, many=True)
+    serializer = DeviceSerializer(devices, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def getSingleDevice(request,deviceId):
+    user = "marcin"
+    devices = Device.objects.get(
+        user__username=user,
+        id = deviceId)
+    serializer = DeviceSerializer(devices)
     return Response(serializer.data)
 
 
@@ -88,3 +97,5 @@ def getAddDeviceToken(request):
     
     serializer = AddDeviceTokenSerializer(device_token)
     return Response(serializer.data)
+
+
