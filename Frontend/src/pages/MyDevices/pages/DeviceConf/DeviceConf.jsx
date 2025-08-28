@@ -53,31 +53,31 @@ const DeviceConf = () => {
             {/* Lista urzadzen */}
             <div>
               {!serverConnectOk ?
-                  <div>
-                    <h2 className='text-gray-400 text-4xl mb-10'>Brak połączenia z serwerem</h2>
-                  </div>
+                <div>
+                  <h2 className='text-gray-400 text-4xl mb-10'>Brak połączenia z serwerem</h2>
+                </div>
                 : !devicesList.length ?
                   <div>
-                   <h2 className='text-gray-400 text-4xl mb-10'>Brak skonfigurowanych urządzeń</h2>
+                    <h2 className='text-gray-400 text-4xl mb-10'>Brak skonfigurowanych urządzeń</h2>
                   </div>
-                :
-                <div className=''>
-                  {devicesList.map((device, id) => (
-                    <div key={id}
-                      className='flex flex-col lg:flex-row items-center justify-between gap-4 bg-gray-700 px-10 my-5 py-8 rounded-2xl cursor-pointer hover:bg-gray-600'
-                      onClick={() => navigate(`./configure-device/${device.id}`)}>
-                      <div>
-                        <h2 className='text-gray-300 text-2xl lg:text-2xl font-bold text-center'>{device.name}</h2>
+                  :
+                  <div className=''>
+                    {devicesList.map((device, id) => (
+                      <div key={id}
+                        className='flex flex-col lg:flex-row items-center gap-4 bg-gray-700 px-10 my-5 py-8 rounded-2xl cursor-pointer hover:bg-gray-600'
+                        onClick={() => navigate(`./configure-device/${device.id}`)}>
+                        <div className='flex-1'>
+                          <h2 className='text-gray-300 text-2xl lg:text-2xl font-bold text-center'>{device.name}</h2>
+                        </div>
+                        <div className='flex-1'>
+                          <h3 className='text-gray-300 px-20 text-xl text-center'>Skonfigurowane czujniki: {device.sensors.length}</h3>
+                        </div>
+                        <div className='flex-1'>
+                          <p className='text-gray-300 text-xl text-center'>Status: {device.online ? <span className='text-green-600 text-xl'>Online</span> : <span className='text-gray-200 text-xl'>Offline</span>}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className='text-gray-300 px-20 text-xl text-center'>Skonfigurowane czujniki: {device.sensors.length}</h3>
-                      </div>
-                      <div>
-                        <span className='text-gray-300 text-xl'>Status: {device.online ? <span className='text-green-600 text-xl'>Online</span> : <span className='text-gray-200 text-xl'>Offline</span>}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>}
+                    ))}
+                  </div>}
             </div>
 
           </div>

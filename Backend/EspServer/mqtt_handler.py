@@ -28,12 +28,19 @@ from django.contrib.auth.models import User
 #     "device_name":"Urzadzenie 1"
 #     "token":"6gikReJKpKM"
 # }
-client = None
+
+
+topics = {
+    "firstConfigGetToken": "firstConfig",
+    "firstConfigSendStatus": "firstConfigStatus",
+    "cyclicData": "cyclicData",
+}
 
 
 def on_connect(client, userdata, flags, rc):
     print("Connected:", rc)
     client.subscribe("+", qos=0)
+    client.subscribe("+/+", qos=0)
 
 
 def cyclicData(payload):
@@ -42,7 +49,7 @@ def cyclicData(payload):
     device_id = payload.get("device_id")
     # 1. Pobierz lub utwórz urządzenie
     device, created_device = Device.objects.get_or_create(
-        device_id=device_id,
+        device_serial_number=device_id,
         # przypisz użytkownika tylko jeśli tworzysz nowe
         defaults={"user": user}
     )
@@ -63,57 +70,74 @@ def cyclicData(payload):
         )
 
 
-def firstConfig(payload):
-    global client
-    user = User.objects.get(username="marcin")
+# def firstConfig(client, payload, device_id):
+#     user = User.objects.get(username="marcin")
 
-    device_id = payload.get("device_id")
-    device_name = payload.get("device_name")
-    token = payload.get("token")
+#     device_name = payload.get("device_name")
+#     token = payload.get("token")
 
-    user_token = AddDeviceToken.objects.filter(user=user).first()
-    if not user_token or not user_token.is_valid():
-        print("Token nieważny")
-        sendStatus(False)
-        return
+#     user_token = AddDeviceToken.objects.filter(user=user).first()
+#     if not user_token or not user_token.is_valid():
+#         print("Token nieważny")
+#         sendStatus(client, device_id, False)
+#         return
 
-    if user_token.token != token:
-        print("Token się nie zgadza")
-        sendStatus(False)
-        return
+#     if user_token.token != token:
+#         print("Token się nie zgadza")
+#         sendStatus(client, device_id, False)
+#         return
 
-    device, created = Device.objects.get_or_create(
-        user=user,
-        device_id=device_id,
-        defaults={"name": device_name}
-    )
-    if not created and device.name != device_name:
-        device.name = device_name
-        device.save()
+#     device, created = Device.objects.get_or_create(
+#         user=user,
+#         device_serial_number=device_id,
+#         defaults={"name": device_name}
+#     )
+#     if not created and device.name != device_name:
+#         device.name = device_name
+#         device.save()
 
-    sendStatus(True)
+#     sendStatus(client, device_id, True)
 
 
-def sendStatus(ok):
-    global client
+def firstConfig(client, payload, device_id):
+
+    try:
+        device_name = payload.get("device_name")
+        token = payload.get("token")
+
+        user_token = AddDeviceToken.objects.filter(token=token).first()
+        if not user_token or not user_token.is_valid():
+            print("Token nieważny")
+            sendStatus(client, device_id, False)
+            return
+
+        # usun wszystkie device o danym serial number
+        Device.objects.filter(
+            device_serial_number=device_id
+        ).delete()
+
+        # utworz nowy device
+        device = Device.objects.create(
+            user=user_token.user,
+            device_serial_number=device_id,
+            name=device_name
+        )
+
+        sendStatus(client, device_id, True)
+    except Exception as e:
+        print(f"Nieoczekiwany błąd: {e}")
+        sendStatus(client, device_id, False)
+
+
+def sendStatus(client, device_id, ok):
     status = "OK" if ok else "NOK"
     payload = json.dumps({"status": status})
 
     if not client.is_connected():
         print("MQTT client not connected, nie wysyłam statusu")
         return
-
-    # Uruchamiamy loop w tle, żeby wysyłka działała
-    # client.loop_start()
-    info = client.publish("firstConfigStatus", payload)
-    info.wait_for_publish()
-    print("xd")
-    # client.loop_stop()
-
-    if info.is_published():
-        print(f"Published {status} to firstConfigStatus")
-    else:
-        print(f"Failed to publish {status}, rc={info.rc}")
+    print(topics["firstConfigSendStatus"] + "/" + device_id)
+    client.publish(topics["firstConfigSendStatus"] + "/" + device_id, payload)
 
 
 def on_message(client, userdata, msg):
@@ -121,14 +145,13 @@ def on_message(client, userdata, msg):
     payload = json.loads(msg.payload.decode())
     topic_parts = msg.topic.split("/")
 
-    if (topic_parts[0] == "cyclicData"):
-        cyclicData(payload=payload)
-    elif (topic_parts[0] == "firstConfig"):
-        firstConfig(payload=payload)
+    if (topic_parts[0] == topics["cyclicData"]):
+        cyclicData(payload)
+    elif (topic_parts[0] == topics["firstConfigGetToken"]):
+        firstConfig(client, payload, topic_parts[1])
 
 
 def start_mqtt():
-    global client
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
