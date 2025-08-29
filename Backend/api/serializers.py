@@ -1,10 +1,16 @@
 from rest_framework import serializers
-from EspServer.models import SensorData, Sensor, Device,AddDeviceToken,DeviceConfig
+from EspServer.models import SensorData, Sensor, Device,AddDeviceToken,DeviceConfig,MeasurementsGroup
 from django.utils import timezone
 from datetime import timedelta
 
 
-class DataSerializer(serializers.ModelSerializer):
+class MeasurementGroupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MeasurementsGroup
+        fields = ["id","name"]
+
+class SensorDataSerializer(serializers.ModelSerializer):
     timestamp = serializers.SerializerMethodField()
 
     class Meta:
@@ -18,38 +24,59 @@ class DataSerializer(serializers.ModelSerializer):
 class SensorWithData24hSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
     actual_value = serializers.SerializerMethodField()
+    measurements_group = serializers.SerializerMethodField()
 
     class Meta:
         model = Sensor
-        fields = ["id", "name", "group_name","actual_value", "data"]
+        fields = ["id", "measurements_group", "group_name","actual_value", "data"]
 
     def get_data(self, obj):
+        if not obj.measurements_group:
+            return None
+        
         time_threshold = timezone.now() - timedelta(hours=24)
-        recent_data = obj.data.filter(
+        recent_data = obj.measurements_group.data.filter(
             timestamp__gte=time_threshold).order_by("timestamp")
-        return DataSerializer(recent_data, many=True).data
+        return SensorDataSerializer(recent_data, many=True).data
 
     def get_actual_value(self, obj):
+        if not obj.measurements_group:
+            return None
+
         time_threshold = timezone.now() - timedelta(minutes=2)
+        
         # ostatnia próbka sprzed 2 minut
-        last_data = obj.data.filter(
+        last_data = obj.measurements_group.data.filter(
             timestamp__gte=time_threshold).order_by('-timestamp').first()
         return last_data.value if last_data else None
 
+    def get_measurements_group(self,obj):
+        if not obj.measurements_group:
+            return None
+        return MeasurementGroupSerializer(obj.measurements_group).data
+    
 class SensorWithActualDataSerializer(serializers.ModelSerializer):
     actual_value = serializers.SerializerMethodField()
+    measurements_group = serializers.SerializerMethodField()
 
     class Meta:
         model = Sensor
-        fields = ["id", "name", "group_name", "actual_value","pin_number"]
+        fields = ["id", "measurements_group", "group_name", "actual_value","pin_number"]
 
     def get_actual_value(self, obj):
+        if not obj.measurements_group:
+            return None
+
         time_threshold = timezone.now() - timedelta(minutes=2)
+        
         # ostatnia próbka sprzed 2 minut
-        last_data = obj.data.filter(
+        last_data = obj.measurements_group.data.filter(
             timestamp__gte=time_threshold).order_by('-timestamp').first()
         return last_data.value if last_data else None
-
+    def get_measurements_group(self,obj):
+        if not obj.measurements_group:
+            return None
+        return MeasurementGroupSerializer(obj.measurements_group).data
 
 class SensorGroupUpdateSerializer(serializers.Serializer):
     id = serializers.CharField()
@@ -58,7 +85,7 @@ class SensorGroupUpdateSerializer(serializers.Serializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     sensors = serializers.SerializerMethodField()
-    online = serializers.SerializerMethodField()
+    # online = serializers.SerializerMethodField()
 
     class Meta:
         model = Device
@@ -68,13 +95,13 @@ class DeviceSerializer(serializers.ModelSerializer):
         sensor_data = obj.sensors.all()
         return SensorWithActualDataSerializer(sensor_data, many=True).data
 
-    def get_online(self, obj):
-        time_threshold = timezone.now() - timedelta(minutes=2)
-        # sprawdzamy czy istnieją jakieś dane nowsze niż próg
-        return SensorData.objects.filter(
-            sensor__device=obj,
-            timestamp__gte=time_threshold
-        ).exists()
+    # def get_online(self, obj):
+    #     time_threshold = timezone.now() - timedelta(minutes=2)
+    #     # sprawdzamy czy istnieją jakieś dane nowsze niż próg
+    #     return SensorData.objects.filter(
+    #         sensor__device=obj,
+    #         timestamp__gte=time_threshold
+    #     ).exists()
 
 class AddDeviceTokenSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField()

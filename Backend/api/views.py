@@ -12,16 +12,16 @@ import secrets
 
 
 @api_view(['GET'])
-def getData24h(request, sensorId):
+def getData24h(request, measurements_group_id):
     user = "marcin"
 
     sensor = Sensor.objects.filter(
         device__user__username=user,
-        id=sensorId
+        measurements_group=measurements_group_id
     ).first()
 
     if not sensor:
-        return Response({"error": "Sensor not found"}, status=404)
+        return Response({"error": "Sensor not found"}, status=200)
 
     serializer = SensorWithData24hSerializer(sensor)
     return Response(serializer.data)

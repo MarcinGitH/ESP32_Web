@@ -38,7 +38,7 @@ const App = () => {
                     </Route>
                     <Route path='download' element={<Download />} />
                 </Route>
-                <Route path='/details-card/:sensorId' element={<DetailsCard />} />
+                <Route path='/details-card/:measurementsGroup' element={<DetailsCard />} />
             </Routes>
 
         </div>

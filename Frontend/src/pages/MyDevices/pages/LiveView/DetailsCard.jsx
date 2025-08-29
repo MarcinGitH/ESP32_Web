@@ -11,7 +11,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 
 const DetailsCard = () => {
-  const { sensorId } = useParams()
+  const { measurementsGroup } = useParams()
   const [apiData, setApiData] = useState({ data: [] });
   const [lastMeasure, setLastMeasure] = useState()
   const [serverConnectOk, setServerConnectOk] = useState()
@@ -97,15 +97,17 @@ const DetailsCard = () => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${sensorId}`)
-        const dataWithNulls = dataFillNull(res.data.data)
-        const clearedData = gaussianSmooth(dataWithNulls,5)
-        setLastMeasure(res.data.actual_value)
-
-        setApiData({
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${measurementsGroup}`)
+        if(res.data.data){
+          const dataWithNulls = dataFillNull(res.data.data)
+          const clearedData = gaussianSmooth(dataWithNulls,5)
+          setApiData({
           ...res.data,
           data: clearedData
         })
+        }
+        
+        setLastMeasure(res.data.actual_value)
         setServerConnectOk(true)
       }
       catch (error) {
@@ -141,7 +143,7 @@ const DetailsCard = () => {
         onClick={() => navigate("../my-devices/live-view")}
       />
       <h2 className='text-center text-gray-300 mt-10 sm:mt-0 text-3xl md:text-4xl mb-10'>
-        {apiData.name}
+        {apiData.measurements_group?.name}
       </h2>
 
       <div className='flex flex-wrap xl:flex-nowrap px-5 items-center justify-center gap-5 pb-10'>
@@ -149,8 +151,8 @@ const DetailsCard = () => {
 
         <SensorCard
           sensorData={{
-            id: sensorId,
-            name: apiData.name,
+            id: measurementsGroup,
+            measurements_group_name: apiData.measurements_group?.name,
             value: lastMeasure,
             online: lastMeasure ? true : false,
 

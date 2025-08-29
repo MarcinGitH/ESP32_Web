@@ -49,6 +49,10 @@
   .button {
     @apply text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold
   }
+
+  .button-small {
+    @apply px-3 py-1 mx-1 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold
+  }
 }
 
 @layer utilities {
