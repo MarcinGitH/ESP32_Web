@@ -60,13 +60,13 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
 
 
   const chartData = useMemo(() => ({
-    labels: data.map(a => a.timestamp),
+    labels: data?.map(a => a.timestamp),
 
     datasets: [
       {
         // tension: 1,
         // cubicInterpolationMode: 'monotone',
-        data: data.map(a => a.value),
+        data: data?.map(a => a.value),
         backgroundColor: 'rgb(255,255,255)',
         borderColor: "rgb(46, 176, 171)",
         pointRadius: 0,

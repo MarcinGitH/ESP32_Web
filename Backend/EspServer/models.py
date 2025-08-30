@@ -23,12 +23,19 @@ class Device(models.Model):
     # opcjonalna nazwa urządzenia
     name = models.CharField(max_length=100, blank=True, null=True)
     last_seen = models.DateTimeField(blank=True, null=True)
+    online = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name or self.device_id}"
 
+class MeasurementsGroup(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='measurements_group')
+    name = models.CharField(max_length=100)
+    created_at = models.DateField(auto_now_add=True)
 
-
+    class Meta:
+        unique_together = ("user", "name")
 
 class Sensor(models.Model):
     class PinNumber(models.IntegerChoices):
@@ -39,7 +46,8 @@ class Sensor(models.Model):
 
     device = models.ForeignKey(
         Device, on_delete=models.CASCADE, related_name='sensors')
-    name = models.CharField(max_length=100, default="sensor name")
+    measurements_group=models.ForeignKey(MeasurementsGroup,on_delete=models.SET_NULL,blank=True,null=True)
+    # name = models.CharField(max_length=100, default="sensor name")
     group_name = models.CharField(max_length=100, default="Inne")
     pin_number = models.IntegerField(choices=PinNumber.choices,default=1)
     # class Meta:
@@ -65,14 +73,15 @@ class DeviceConfig(models.Model):
     pin_function = models.CharField(max_length=50, choices=PinFunction.choices)
     sensor = models.ForeignKey(Sensor, on_delete=models.SET_NULL, null=True, blank=True, related_name="pin_config")
 
+
+
 class SensorData(models.Model):
-    sensor = models.ForeignKey(
-        Sensor, on_delete=models.CASCADE, related_name='data')
+    measurements_group = models.ForeignKey(
+        MeasurementsGroup, on_delete=models.CASCADE, related_name='data',blank=True,null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     value = models.FloatField()
 
     class Meta:
         ordering = ['-timestamp']
 
-    def __str__(self):
-        return f"{self.sensor.name}: {self.value} @ {self.timestamp}"
+   

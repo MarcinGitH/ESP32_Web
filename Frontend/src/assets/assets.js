@@ -6,6 +6,7 @@ import chartIcon from './icons/chart.svg'
 import liveIcon from './icons/live.svg'
 import xmark from './icons/xmark.svg'
 import copy from './icons/copy.svg'
+import trash from './icons/trash.svg'
 
 
 
@@ -19,5 +20,6 @@ export const assets = {
     liveIcon,
     xmark,
     copy,
+    trash,
 
 }

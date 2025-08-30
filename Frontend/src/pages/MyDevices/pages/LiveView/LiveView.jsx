@@ -70,8 +70,8 @@ const LiveView = () => {
     cancelGroup();
   };
 
-  const handleCardClick = (id) => (
-    groupMode ? groupToggleSensor(id) : navigate(`../../../details-card/${id}`)
+  const handleCardClick = (sensorId,measurementsGroupId) => (
+    groupMode ? groupToggleSensor(sensorId) : measurementsGroupId && navigate(`../../../details-card/${measurementsGroupId}`)
   )
 
   const groups = [
@@ -147,7 +147,8 @@ const LiveView = () => {
                     key={d.id}
                     sensorData={{
                       id: d.id,
-                      name: d.name,
+                      measurements_group_name: d.measurements_group ? d.measurements_group.name : "Dodaj nazwę",
+                      measurements_group_id: d.measurements_group ? d.measurements_group.id : null,
                       online: d.actual_value != null,
                       value: d.actual_value,
                     }}
