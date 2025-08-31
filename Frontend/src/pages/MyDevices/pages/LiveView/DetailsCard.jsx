@@ -97,16 +97,16 @@ const DetailsCard = () => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${measurementsGroup}`)
-        if(res.data.data){
+        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-data-24h/${measurementsGroup}`)
+        if (res.data.data) {
           const dataWithNulls = dataFillNull(res.data.data)
-          const clearedData = gaussianSmooth(dataWithNulls,5)
+          const clearedData = gaussianSmooth(dataWithNulls, 5)
           setApiData({
-          ...res.data,
-          data: clearedData
-        })
+            ...res.data,
+            data: clearedData
+          })
         }
-        
+
         setLastMeasure(res.data.actual_value)
         setServerConnectOk(true)
       }

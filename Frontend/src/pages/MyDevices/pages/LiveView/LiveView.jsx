@@ -20,7 +20,7 @@ const LiveView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-all-sensors`)
+        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-all-sensors`)
 
         setAllSensors(res.data)
         setServerConnectOk(true)
@@ -52,10 +52,10 @@ const LiveView = () => {
   };
 
 
-  const confirmGroup = () => {
+  const confirmGroup = async () => {
     const data = selectedSensors.map(s => ({ id: s, group_name: groupName }))
     try {
-      axios.post("http://127.0.0.1:8000/api/devices/update-sensors-group", data)
+      await axios.post("http://192.168.0.14:8000/api/devices/update-sensors-group", data)
     }
     catch {
       console.error(err)
@@ -70,7 +70,7 @@ const LiveView = () => {
     cancelGroup();
   };
 
-  const handleCardClick = (sensorId,measurementsGroupId) => (
+  const handleCardClick = (sensorId, measurementsGroupId) => (
     groupMode ? groupToggleSensor(sensorId) : measurementsGroupId && navigate(`../../../details-card/${measurementsGroupId}`)
   )
 

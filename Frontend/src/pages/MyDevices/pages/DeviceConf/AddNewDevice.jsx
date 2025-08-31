@@ -34,7 +34,7 @@ const AddNewDevice = () => {
         const getToken = async () => {
             if (!tokenRef.current || tokenRef.current.expires_at < Date.now()) {
                 try {
-                    const res = await axios.get("http://127.0.0.1:8000/api/devices/get-add-device-token")
+                    const res = await axios.get("http://192.168.0.14:8000/api/devices/get-add-device-token")
                     setAddDeviceToken(res.data)
                     setServerOk(true)
                 }
@@ -60,7 +60,7 @@ const AddNewDevice = () => {
                     className='absolute top-5 right-5 w-10 h-10 md:w-15 md:h-15 cursor-pointer'
                     onClick={() => navigate("../device-conf")} />
                 <h2 className='text-2xl md:text-3xl mt-10 md:mt-5 text-gray-300'>Token autoryzacji urządzenia</h2>
-                <div className='rounded-2xl w-60 md:w-100 inline-block bg-gray-700 mt-5 px-3 relative'>
+                <div className='rounded-2xl w-80 md:w-100 inline-block bg-gray-700 mt-5 px-3 relative'>
                     <img src={assets.copy} alt="Kopiuj" className='w-8 absolute right-5 top-1/2 -translate-y-1/2 cursor-pointer z-50'
                         onClick={copyToClipboard}
                         title='Kopiuj' />

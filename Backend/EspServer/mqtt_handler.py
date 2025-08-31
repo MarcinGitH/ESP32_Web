@@ -64,7 +64,7 @@ def cyclicData(payload):
 
         # 3. Zapisz dane
         SensorData.objects.create(
-            sensor=sensor,
+            measurements_group=sensor.measurements_group,
             value=sensorMQTT['value'],
 
         )

@@ -12,7 +12,7 @@ const DeviceConf = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-devices`)
+        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-devices`)
 
         setDevicesList(res.data)
         setServerConnectOk(true)
@@ -47,7 +47,7 @@ const DeviceConf = () => {
             <div>
               <h2 className='text-center text-3xl text-gray-300 mt-5 font-bold'>Lista urządzeń</h2>
               <button type='button'
-                className='button mb-5'
+                className='button my-5'
                 onClick={() => navigate("./add-new")}>Dodaj urządzenie</button>
             </div>
             {/* Lista urzadzen */}

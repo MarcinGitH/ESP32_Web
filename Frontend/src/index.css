@@ -5,7 +5,10 @@
 
 @import "tailwindcss";
 
-
+.toast-background {
+  background-color: rgb(70, 69, 69) !important;
+  color: #fff !important;
+}
 
 
 
@@ -51,7 +54,7 @@
   }
 
   .button-small {
-    @apply px-3 py-1 mx-1 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold
+    @apply px-3 py-1 mx-1 my-1 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold
   }
 }
 
