@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import SensorsConfigList from './SensorsConfigList';
-import { ToastContainer, toast,Bounce } from 'react-toastify';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const ConfigureDevice = () => {
   const { deviceId } = useParams()
@@ -52,7 +52,7 @@ const ConfigureDevice = () => {
             className: 'toast-background',
           },
           success: {
-            render: 'Ustawienia zostały zapisane',
+            render: 'Ustawienia zostały zapisane. Zrestartuj urządzenie.',
             className: 'toast-background',
           },
           error: {
@@ -71,13 +71,13 @@ const ConfigureDevice = () => {
   return (
     <div className=''>
       <ToastContainer
-  position="top-right"
-  autoClose={3000}
-  theme="dark"
-  pauseOnFocusLoss={false}
-  pauseOnHover={false}
-  transition={Bounce}
-/>
+        position="top-right"
+        autoClose={3000}
+        theme="dark"
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        transition={Bounce}
+      />
       <motion.div
         className='px-1 lg:px-20 mt-10 w-full h-auto'
         initial={{ opacity: 0 }}
