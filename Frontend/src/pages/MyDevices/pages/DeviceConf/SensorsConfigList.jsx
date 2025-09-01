@@ -22,7 +22,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
         const availablePins = sensors.map(sensor => {
             const otherSensorsPins = sensors.map(s => s.pin_number).filter(p => p !== sensor.pin_number)
             return ({
-                sensor_id: sensor.id,
+                sensor_id: sensor.sensor_id,
                 pins: allPins.filter(pin => !otherSensorsPins.includes(pin)).sort((a, b) => a - b)
             })
         })
@@ -55,7 +55,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             }
 
             return {
-                sensor_id: sensor.id,
+                sensor_id: sensor.sensor_id,
                 available_measure_groups: groups.sort((a, b) => a.name.localeCompare(b.name))
             };
         });
@@ -72,22 +72,36 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                 return [...prev, { sensorId, show: showValue }]
             }
         })
-        // console.log(availMeasurGroup)
+        
     }
 
     const handleAddSensor = () => {
+        // obliczanie pierwszego wolnego sensor_id
+        let lowestFreeId = -1
+        const sortedSensorsId = sensors.map(s=>s.sensor_id).sort((a,b)=>a-b)
+        for(let i = 1;i<=sortedSensorsId.length+1;i++){
+            if(!sortedSensorsId.includes(i)){
+                lowestFreeId = i
+                break
+            }
+        }
+
+
+
         const newSensor = {
-            id: (sensors[sensors.length - 1]?.id ?? 0) + 1,
-            name: "",
-            group_name: null,
-            actual_value: null,
-            pin_number: -1,
+            id:null,
+            // sensor_id: (sensors[sensors.length - 1]?.sensor_id ?? 0) + 1,
+            sensor_id: lowestFreeId,
             measurements_group: {
                 id: -1,
                 name: null
-            }
+            },
+            group_name: "Inne",
+            actual_value: null,
+            pin_number: -1,
+            
         };
-        console.log(measurGroup)
+
         onChange([...sensors, newSensor], availableMeasureGroups);
     }
 
@@ -99,10 +113,10 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
 
 
     const updateSensor = (key, id, value) => {
-        console.log(value)
+       
         // zmiana parametrow sensora
         const updatedSensors = sensors.map(sensor => {
-            if (sensor.id === id) {
+            if (sensor.sensor_id === id) {
                 return { ...sensor, [key]: value };
             }
             return sensor;
@@ -112,7 +126,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
         let aMG = availableMeasureGroups
         if (key === "measurements_group") {
             const reducedAMG = availableMeasureGroups.filter(a => a.id !== value.id)
-            const sensor = sensors.find(s => s.id === id)
+            const sensor = sensors.find(s => s.sensor_id === id)
             aMG = sensor.measurements_group?.id > 0 ? [...reducedAMG, sensor.measurements_group] : reducedAMG
         }
 
@@ -129,10 +143,10 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
         setTimeout(() => {
             setSensorIdDeleteAnimation(0)
             // dodanie grupy pomiarow ktora byla przy usunietym sensorze
-            const sensor = sensors.find(s => s.id === sensorId)
+            const sensor = sensors.find(s => s.sensor_id === sensorId)
             const aMG = sensor.measurements_group.id > 0 ? [...availableMeasureGroups, sensor.measurements_group] : availableMeasureGroups
 
-            onChange(sensors.filter(s => s.id !== sensorId), aMG)
+            onChange(sensors.filter(s => s.sensor_id !== sensorId), aMG)
             setDeleteQuestion(prev => {
                 const exists = prev.find(d => d.sensorId === sensorId)
                 if (exists) {
@@ -168,21 +182,21 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                 {sensors.map(sensor => (
                     // obsluga usuwania
                     <div className={`flex flex-col md:flex-row items-center bg-gray-600 rounded-2xl py-3 my-3 px-5 mx-3 relative transition-all duration-200
-                        ${sensor.id === sensorIdDeleteAnimation ? "opacity-0" : ""}`}
-                        key={sensor.id}>
+                        ${sensor.sensor_id === sensorIdDeleteAnimation ? "opacity-0" : ""}`}
+                        key={sensor.sensor_id}>
                         <img src={assets.trash} alt=""
                             className='absolute w-8 right-2 sm:right-5 bottom-2 sm:top-1/2 sm:-translate-y-1/2 cursor-pointer opacity-60 transition-all hover:rotate-6 hover:opacity-90'
-                            onClick={() => handleDeleteQuestion(sensor.id, true)} />
+                            onClick={() => handleDeleteQuestion(sensor.sensor_id, true)} />
                         <div className={`flex justify-between items-center absolute top-1/2 -translate-y-1/2 bg-gray-500 rounded-md border-2 border-gray-400 transition-all duration-200
-                                    ${deleteQuestion.find(d => d.sensorId === sensor.id)?.show ? "right-15 translate-0 opacity-100" : "-right-10 translate-x-full opacity-0"}`}>
+                                    ${deleteQuestion.find(d => d.sensorId === sensor.sensor_id)?.show ? "right-15 translate-0 opacity-100" : "-right-10 translate-x-full opacity-0"}`}>
                             <p className='text-center text-gray-300 px-5 py-3'>Czy usunąć czujnik?</p>
                             <div className='text-center mx-1 sm:mx-5'>
                                 <button className='button-small'
-                                    onClick={() => deleteSensor(sensor.id)}>
+                                    onClick={() => deleteSensor(sensor.sensor_id)}>
                                     Tak
                                 </button>
                                 <button className='button-small'
-                                    onClick={() => handleDeleteQuestion(sensor.id, false)}>
+                                    onClick={() => handleDeleteQuestion(sensor.sensor_id, false)}>
                                     Nie
                                 </button>
                             </div>
@@ -200,10 +214,10 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                         <div className='flex-1 text-center'>
                             <select className='bg-gray-500 text-gray-200 px-3 py-2 rounded-md shadow-md cursor-pointer focus:outline-none'
                                 value={sensor.measurements_group?.id}
-                                onChange={(e) => updateSensor("measurements_group", sensor.id, measurGroup.find(m => m.sensor_id === sensor.id).available_measure_groups.find(a => a.id === +e.target.value) || { id: -1, name: null })}
+                                onChange={(e) => updateSensor("measurements_group", sensor.sensor_id, measurGroup.find(m => m.sensor_id === sensor.sensor_id).available_measure_groups.find(a => a.id === +e.target.value) || { id: -1, name: null })}
                             >
                                 <option key={-1} value={{ id: -1, name: null }}>---</option>
-                                {measurGroup.find(m => m.sensor_id === sensor.id)?.available_measure_groups
+                                {measurGroup.find(m => m.sensor_id === sensor.sensor_id)?.available_measure_groups
                                     .map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                             </select>
 
@@ -214,9 +228,9 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                         <div className='flex-1 text-center'>
                             <select className='bg-gray-500 text-gray-200 px-3 py-2 rounded-md shadow-md cursor-pointer focus:outline-none'
                                 value={sensor.pin_number}
-                                onChange={(e) => updateSensor("pin_number", sensor.id, +e.target.value)}>
+                                onChange={(e) => updateSensor("pin_number", sensor.sensor_id, +e.target.value)}>
                                 <option key={-1} value={-1}>---</option>
-                                {availablePins?.find(ap => ap.sensor_id === sensor.id)
+                                {availablePins?.find(ap => ap.sensor_id === sensor.sensor_id)
                                     ?.pins?.map(p => <option key={p} value={p}>{p}</option>)
                                 }
                             </select>

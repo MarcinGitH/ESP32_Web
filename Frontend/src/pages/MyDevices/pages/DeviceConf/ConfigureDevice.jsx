@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import SensorsConfigList from './SensorsConfigList';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast,Bounce } from 'react-toastify';
 
 const ConfigureDevice = () => {
   const { deviceId } = useParams()
@@ -15,7 +15,7 @@ const ConfigureDevice = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-device-config/${deviceId}`)
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-device-config/${deviceId}`)
         setDeviceConfig(res.data)
         setNewDeviceConfig(res.data)
         setServerConnectOk(true)
@@ -42,9 +42,10 @@ const ConfigureDevice = () => {
   };
 
   const sendConfigToServer = async () => {
+    console.log(newDeviceConfig)
     try {
       await toast.promise(
-        axios.post('http://192.168.0.14:8000/api/devices/update-device-config', newDeviceConfig),
+        axios.post('http://127.0.0.1:8000/api/devices/update-device-config', newDeviceConfig),
         {
           pending: {
             render: 'Łączenie z serwerem...',
@@ -69,7 +70,14 @@ const ConfigureDevice = () => {
 
   return (
     <div className=''>
-      <ToastContainer autoClose={3000} theme='dark' pauseOnFocusLoss={false} pauseOnHover={false} />
+      <ToastContainer
+  position="top-right"
+  autoClose={3000}
+  theme="dark"
+  pauseOnFocusLoss={false}
+  pauseOnHover={false}
+  transition={Bounce}
+/>
       <motion.div
         className='px-1 lg:px-20 mt-10 w-full h-auto'
         initial={{ opacity: 0 }}

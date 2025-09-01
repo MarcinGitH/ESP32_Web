@@ -20,7 +20,7 @@ class Device(models.Model):
         User, on_delete=models.CASCADE, related_name='devices')
     device_serial_number = models.CharField(max_length=100, unique=True)
     # opcjonalna nazwa urządzenia
-    name = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=100,default="Nadaj nazwę")
     last_seen = models.DateTimeField(blank=True, null=True)
     online = models.BooleanField(default=False)
 
@@ -39,19 +39,14 @@ class MeasurementsGroup(models.Model):
 
 
 class Sensor(models.Model):
-    class PinNumber(models.IntegerChoices):
-        ONE = 1, "1"
-        TWO = 2, "2"
-        THREE = 3, "3"
-        FOUR = 4, "4"
-
+    sensor_id = models.IntegerField(blank=True,null=True)
     device = models.ForeignKey(
         Device, on_delete=models.CASCADE, related_name='sensors')
     measurements_group = models.OneToOneField(
         MeasurementsGroup, on_delete=models.SET_NULL, blank=True, null=True, related_name='mg_sensors')
     # name = models.CharField(max_length=100, default="sensor name")
     group_name = models.CharField(max_length=100, default="Inne")
-    pin_number = models.IntegerField(choices=PinNumber.choices, default=1)
+    pin_number = models.IntegerField(default=1)
     # class Meta:
     #     # sensor_id unikalny w obrębie device
     #     unique_together = ('device', 'sensor_id')
@@ -60,24 +55,6 @@ class Sensor(models.Model):
         return f"{self.name} ({self.sensor_id})"
 
 
-class DeviceConfig(models.Model):
-    class PinNumber(models.IntegerChoices):
-        ONE = 1, "1"
-        TWO = 2, "2"
-        THREE = 3, "3"
-        FOUR = 4, "4"
-
-    class PinFunction(models.TextChoices):
-        TEMPERATURE_SENSOR = "TEMP", "Czujnik temperatury"
-        SWITCH = "SWITCH", "Wyjście ON/OFF"
-
-    # Device.configs.all() -> lista pinów
-    device = models.ForeignKey(
-        Device, on_delete=models.CASCADE, related_name="configs")
-    pin_number = models.IntegerField(choices=PinNumber.choices)
-    pin_function = models.CharField(max_length=50, choices=PinFunction.choices)
-    sensor = models.ForeignKey(
-        Sensor, on_delete=models.SET_NULL, null=True, blank=True, related_name="pin_config")
 
 
 class SensorData(models.Model):

@@ -63,3 +63,4 @@
     @apply before:content-[""] relative after:absolute after:w-3 after:h-3 after:rounded-full after:-left-7 after:top-1/2 after:-translate-y-1/2 after:bg-gray-300
   }
 }
+

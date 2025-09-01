@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from EspServer.models import SensorData, Sensor, Device, AddDeviceToken, DeviceConfig, MeasurementsGroup
+from EspServer.models import SensorData, Sensor, Device, AddDeviceToken, MeasurementsGroup
 from django.utils import timezone
 from datetime import timedelta
 
 
 class MeasurementGroupSerializer(serializers.ModelSerializer):
-
+    id = serializers.IntegerField(required=True)
     class Meta:
         model = MeasurementsGroup
         fields = ["id", "name"]
@@ -64,7 +64,7 @@ class SensorWithActualDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sensor
-        fields = ["id", "measurements_group",
+        fields = ["id","sensor_id","measurements_group",
                   "group_name", "actual_value", "pin_number"]
 
     def get_actual_value(self, obj):
@@ -130,3 +130,55 @@ class AddDeviceTokenSerializer(serializers.ModelSerializer):
 
     def get_expires_at(self, obj):
         return int(obj.expires_at.timestamp()*1000)
+
+class SensorUpdateSerializer(serializers.ModelSerializer):
+    measurements_group = MeasurementGroupSerializer()  # tylko do walidacji id grupy
+    id = serializers.IntegerField(required=False, allow_null=True)
+    class Meta:
+        model = Sensor
+        fields = ["id","sensor_id", "group_name", "measurements_group", "pin_number"]
+
+class DeviceUpdateSerializer(serializers.ModelSerializer):
+    sensors = SensorUpdateSerializer(many=True)
+
+    class Meta:
+        model = Device
+        # tylko te pola aktualizujemy, reszta JSON-a zostanie zignorowana
+        fields = ["name", "sensors"]
+
+    def update(self, instance, validated_data):
+        # aktualizacja name
+        instance.name = validated_data.get("name", instance.name)
+        instance.save()
+        sensors_data = validated_data.pop("sensors", [])
+
+        # obsluga usuwania sensorow
+        sensors_id_update_list = []
+        
+        for sensor_data in sensors_data:
+                sensors_id_update_list.append(sensor_data["sensor_id"])
+
+        device_sensors = Sensor.objects.filter(device=instance)
+        for sensor in device_sensors:
+            if (sensor.sensor_id not in sensors_id_update_list):
+                sensor.delete()
+
+
+        # aktualizacja sensorów
+        for sensor_data in sensors_data:
+                sensor,created=Sensor.objects.get_or_create(
+                    sensor_id = sensor_data["sensor_id"],
+                    device = instance,
+                    defaults={
+                        "measurements_group" : MeasurementsGroup.objects.get(id=sensor_data["measurements_group"]["id"]),
+                        "pin_number" : sensor_data["pin_number"],
+                    }
+                )
+                if not created:
+                    sensor.measurements_group = MeasurementsGroup.objects.get(id=sensor_data["measurements_group"]["id"])
+                    sensor.pin_number = sensor_data["pin_number"]
+                    sensor.save()
+
+        
+
+        return instance

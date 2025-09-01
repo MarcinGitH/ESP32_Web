@@ -97,7 +97,7 @@ const DetailsCard = () => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://192.168.0.14:8000/api/devices/get-data-24h/${measurementsGroup}`)
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${measurementsGroup}`)
         if (res.data.data) {
           const dataWithNulls = dataFillNull(res.data.data)
           const clearedData = gaussianSmooth(dataWithNulls, 5)

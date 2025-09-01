@@ -34,7 +34,7 @@ const AddNewDevice = () => {
         const getToken = async () => {
             if (!tokenRef.current || tokenRef.current.expires_at < Date.now()) {
                 try {
-                    const res = await axios.get("http://192.168.0.14:8000/api/devices/get-add-device-token")
+                    const res = await axios.get("http://127.0.0.1:8000/api/devices/get-add-device-token")
                     setAddDeviceToken(res.data)
                     setServerOk(true)
                 }

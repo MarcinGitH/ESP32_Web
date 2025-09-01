@@ -1,14 +1,15 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DeviceSerializer, AddDeviceTokenSerializer
+from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DeviceSerializer, AddDeviceTokenSerializer,DeviceUpdateSerializer
 from rest_framework import status
 
 from datetime import datetime, timedelta
-from EspServer.models import Sensor, Device, AddDeviceToken, User, DeviceConfig
+from EspServer.models import Sensor, Device, AddDeviceToken, User
 from django.utils import timezone
 from datetime import timedelta
 import secrets
+import time
 
 
 @api_view(['GET'])
@@ -100,24 +101,24 @@ def getAddDeviceToken(request):
     return Response(serializer.data)
 
 
+
 @api_view(['POST'])
 def updateDeviceConfig(request):
-    serializer = SensorGroupUpdateSerializer(data=request.data, many=True)
+    # pobieramy device_id z JSON-a
+    device_id = request.data.get("id")
+
+    if not device_id:
+        return Response({"error": "Device id not provided"}, status=400)
+
+    try:
+        device = Device.objects.get(id=device_id)
+    except Device.DoesNotExist:
+        return Response({"error": "Device not found"}, status=404)
+    
+    serializer = DeviceUpdateSerializer(device, data=request.data,partial=True)
+    
     if serializer.is_valid():
-        results = []
-        for item in serializer.validated_data:
-            try:
-                sensor = Sensor.objects.get(id=item['id'])
-                sensor.group_name = item['group_name']
-                sensor.save()
-                results.append({
-                    "id": sensor.id,
-                    "group_name": sensor.group_name
-                })
-            except Sensor.DoesNotExist:
-                results.append({
-                    "id": item['id'],
-                    "error": "Sensor not found"
-                })
-        return Response(results, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=200)
+         
+    return Response(serializer.errors, status=400)
