@@ -8,7 +8,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
     const [deleteQuestion, setDeleteQuestion] = useState([])
     const [sensorIdDeleteAnimation, setSensorIdDeleteAnimation] = useState(0)
 
-    const allPins = Array.from({ length: 15 }, (_, i) => i + 1)
+    const allPins = Array.from({ length: 25 }, (_, i) => i + 1)
 
 
     // Generowanie przypisania dostepnych pinow dla sensora
@@ -72,15 +72,15 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                 return [...prev, { sensorId, show: showValue }]
             }
         })
-        
+
     }
 
     const handleAddSensor = () => {
         // obliczanie pierwszego wolnego sensor_id
         let lowestFreeId = -1
-        const sortedSensorsId = sensors.map(s=>s.sensor_id).sort((a,b)=>a-b)
-        for(let i = 1;i<=sortedSensorsId.length+1;i++){
-            if(!sortedSensorsId.includes(i)){
+        const sortedSensorsId = sensors.map(s => s.sensor_id).sort((a, b) => a - b)
+        for (let i = 1; i <= sortedSensorsId.length + 1; i++) {
+            if (!sortedSensorsId.includes(i)) {
                 lowestFreeId = i
                 break
             }
@@ -89,7 +89,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
 
 
         const newSensor = {
-            id:null,
+            id: null,
             // sensor_id: (sensors[sensors.length - 1]?.sensor_id ?? 0) + 1,
             sensor_id: lowestFreeId,
             measurements_group: {
@@ -99,10 +99,10 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             group_name: "Inne",
             actual_value: null,
             pin_number: -1,
-            
+
         };
 
-        onChange([...sensors, newSensor], availableMeasureGroups);
+        onChange([newSensor, ...sensors], availableMeasureGroups);
     }
 
     useEffect(() => {
@@ -113,7 +113,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
 
 
     const updateSensor = (key, id, value) => {
-       
+
         // zmiana parametrow sensora
         const updatedSensors = sensors.map(sensor => {
             if (sensor.sensor_id === id) {
@@ -144,8 +144,8 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             setSensorIdDeleteAnimation(0)
             // dodanie grupy pomiarow ktora byla przy usunietym sensorze
             const sensor = sensors.find(s => s.sensor_id === sensorId)
-            const aMG = sensor.measurements_group.id > 0 ? [...availableMeasureGroups, sensor.measurements_group] : availableMeasureGroups
-
+            const aMG = sensor.measurements_group?.id > 0 ? [...availableMeasureGroups, sensor.measurements_group] : availableMeasureGroups
+            sensors.filter(s => s.sensor_id !== sensorId)
             onChange(sensors.filter(s => s.sensor_id !== sensorId), aMG)
             setDeleteQuestion(prev => {
                 const exists = prev.find(d => d.sensorId === sensorId)

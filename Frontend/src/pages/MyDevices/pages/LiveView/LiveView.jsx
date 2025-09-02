@@ -147,7 +147,7 @@ const LiveView = () => {
                     key={d.id}
                     sensorData={{
                       id: d.id,
-                      measurements_group_name: d.measurements_group ? d.measurements_group.name : "Dodaj nazwę",
+                      measurements_group_name: d.measurements_group ? d.measurements_group.name : "Przypisz grupę pomiarów",
                       measurements_group_id: d.measurements_group ? d.measurements_group.id : null,
                       online: d.actual_value != null,
                       value: d.actual_value,

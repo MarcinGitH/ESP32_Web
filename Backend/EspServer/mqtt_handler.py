@@ -49,21 +49,24 @@ def cyclicData(payload):
     sensors = payload.get("sensors")
     device_serial_number = payload.get("device_serial_number")
 
-    device = Device.objects.get(
-        device_serial_number=device_serial_number,
-    )
-
-    for sensorMQTT in sensors:
-        sensor = Sensor.objects.get(
-            device=device,
-            sensor_id=sensorMQTT['sensor_id'],
+    try:
+        device = Device.objects.get(
+            device_serial_number=device_serial_number,
         )
 
-        if (sensor.measurements_group):
-            SensorData.objects.create(
-                measurements_group=sensor.measurements_group,
-                value=sensorMQTT['value'],
+        for sensorMQTT in sensors:
+            sensor = Sensor.objects.get(
+                device=device,
+                sensor_id=sensorMQTT['sensor_id'],
             )
+
+            if (sensor.measurements_group):
+                SensorData.objects.create(
+                    measurements_group=sensor.measurements_group,
+                    value=sensorMQTT['value'],
+                )
+    except:
+        print("Blad ladowania danych do DB z MQTT")
 
 
 def firstConfig(client, payload, device_serial_number):
@@ -79,16 +82,30 @@ def firstConfig(client, payload, device_serial_number):
             return
 
         # usun wszystkie device o danym serial number
-        Device.objects.filter(
-            device_serial_number=device_serial_number
-        ).delete()
+        # Device.objects.filter(
+        #     device_serial_number=device_serial_number
+        # ).delete()
 
-        # utworz nowy device
-        device = Device.objects.create(
-            user=user_token.user,
+        # # utworz nowy device
+        # device = Device.objects.create(
+        #     user=user_token.user,
+        #     device_serial_number=device_serial_number,
+        #     name=device_name
+        # )
+
+        device, created = Device.objects.get_or_create(
             device_serial_number=device_serial_number,
-            name=device_name
+            user=user_token.user,
+            defaults={
+                "user": user_token.user,
+                "device_serial_number": device_serial_number,
+                "name": device_name
+            }
         )
+
+        if not created:
+            device.name = device_name
+            device.save()
 
         sendStatus(client, device_serial_number, True)
     except Exception as e:

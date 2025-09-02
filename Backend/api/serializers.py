@@ -3,18 +3,22 @@ from EspServer.models import SensorData, Sensor, Device, AddDeviceToken, Measure
 from django.utils import timezone
 from datetime import timedelta
 
+
 class MeasurementGroupCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(allow_blank=False, required=True)
     # created_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = MeasurementsGroup
         fields = ["id", "name"]
+
 
 class MeasurementGroupSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     name = serializers.CharField(allow_blank=False, required=True)
     # created_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = MeasurementsGroup
         fields = ["id", "name"]
@@ -73,7 +77,7 @@ class SensorWithActualDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sensor
-        fields = ["id","sensor_id","measurements_group",
+        fields = ["id", "sensor_id", "measurements_group",
                   "group_name", "actual_value", "pin_number"]
 
     def get_actual_value(self, obj):
@@ -113,8 +117,6 @@ class DeviceSerializer(serializers.ModelSerializer):
         return SensorWithActualDataSerializer(sensor_data, many=True).data
 
 
-
-
 class AddDeviceTokenSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField()
     expires_at = serializers.SerializerMethodField()
@@ -129,12 +131,16 @@ class AddDeviceTokenSerializer(serializers.ModelSerializer):
     def get_expires_at(self, obj):
         return int(obj.expires_at.timestamp()*1000)
 
+
 class SensorUpdateSerializer(serializers.ModelSerializer):
     measurements_group = MeasurementGroupSerializer()  # tylko do walidacji id grupy
     id = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = Sensor
-        fields = ["id","sensor_id", "group_name", "measurements_group", "pin_number"]
+        fields = ["id", "sensor_id", "group_name",
+                  "measurements_group", "pin_number"]
+
 
 class DeviceUpdateSerializer(serializers.ModelSerializer):
     sensors = SensorUpdateSerializer(many=True)
@@ -152,31 +158,29 @@ class DeviceUpdateSerializer(serializers.ModelSerializer):
 
         # obsluga usuwania sensorow
         sensors_id_update_list = []
-        
+
         for sensor_data in sensors_data:
-                sensors_id_update_list.append(sensor_data["sensor_id"])
+            sensors_id_update_list.append(sensor_data["sensor_id"])
 
         device_sensors = Sensor.objects.filter(device=instance)
         for sensor in device_sensors:
             if (sensor.sensor_id not in sensors_id_update_list):
                 sensor.delete()
 
-        print(sensor_data)
         # aktualizacja sensorów
         for sensor_data in sensors_data:
-                sensor,created=Sensor.objects.get_or_create(
-                    sensor_id = sensor_data["sensor_id"],
-                    device = instance,
-                    defaults={
-                        "measurements_group" : MeasurementsGroup.objects.get(id=sensor_data["measurements_group"]["id"]),
-                        "pin_number" : sensor_data["pin_number"],
-                    }
-                )
-                if not created:
-                    sensor.measurements_group = MeasurementsGroup.objects.get(id=sensor_data["measurements_group"]["id"])
-                    sensor.pin_number = sensor_data["pin_number"]
-                    sensor.save()
-
-        
+            sensor, created = Sensor.objects.get_or_create(
+                sensor_id=sensor_data["sensor_id"],
+                device=instance,
+                defaults={
+                    "measurements_group": MeasurementsGroup.objects.get(id=sensor_data["measurements_group"]["id"]),
+                    "pin_number": sensor_data["pin_number"],
+                }
+            )
+            if not created:
+                sensor.measurements_group = MeasurementsGroup.objects.get(
+                    id=sensor_data["measurements_group"]["id"])
+                sensor.pin_number = sensor_data["pin_number"]
+                sensor.save()
 
         return instance
