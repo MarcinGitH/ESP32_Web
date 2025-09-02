@@ -8,6 +8,7 @@ import { ToastContainer, toast, Bounce } from 'react-toastify';
 const ConfigureDevice = () => {
   const { deviceId } = useParams()
   const [deviceConfig, setDeviceConfig] = useState([])
+  const [availMeasureGroups, setAvailMeasureGroups] = useState()
   const [newDeviceConfig, setNewDeviceConfig] = useState()
   const [serverConnectOk, setServerConnectOk] = useState(false)
   const navigate = useNavigate()
@@ -16,13 +17,15 @@ const ConfigureDevice = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-device-config/${deviceId}`)
-        setDeviceConfig(res.data)
-        setNewDeviceConfig(res.data)
+        setDeviceConfig(res.data.device)
+        setNewDeviceConfig(res.data.device)
+        setAvailMeasureGroups(res.data.available_measurement_groups)
         setServerConnectOk(true)
       }
       catch (error) {
         console.error(error)
         setDeviceConfig([])
+        setAvailMeasureGroups([])
         setServerConnectOk(false)
       }
     };
@@ -39,6 +42,7 @@ const ConfigureDevice = () => {
       ...prev,
       [key]: value
     }));
+    console.log(newDeviceConfig)
   };
 
   const sendConfigToServer = async () => {
@@ -101,7 +105,7 @@ const ConfigureDevice = () => {
 
               {/* Czujniki */}
               <div>
-                <SensorsConfigList sensors={newDeviceConfig.sensors} availableMeasureGroups={newDeviceConfig.available_measurement_groups} onChange={handleConfigChange} />
+                <SensorsConfigList sensors={newDeviceConfig.sensors} availableMeasureGroups={availMeasureGroups} onChange={handleConfigChange} />
 
               </div>
               {/* ON/OFF */}
@@ -118,7 +122,7 @@ const ConfigureDevice = () => {
                 <button type='button'
                   className='button my-5 ml-5'
                   onClick={() => navigate("../device-conf")}>
-                  Anuluj
+                  Zamknij
                 </button>
               </div>
 

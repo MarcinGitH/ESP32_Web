@@ -1,11 +1,11 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DeviceSerializer, AddDeviceTokenSerializer,DeviceUpdateSerializer
+from .serializers import MeasurementGroupCreateSerializer,MeasurementGroupSerializer,SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DeviceSerializer, AddDeviceTokenSerializer,DeviceUpdateSerializer
 from rest_framework import status
 
 from datetime import datetime, timedelta
-from EspServer.models import Sensor, Device, AddDeviceToken, User
+from EspServer.models import Sensor, Device, AddDeviceToken, User,MeasurementsGroup
 from django.utils import timezone
 from datetime import timedelta
 import secrets
@@ -68,13 +68,38 @@ def getDevices(request):
 
 
 @api_view(['GET'])
+def getDeviceList(request):
+    user = "marcin"
+    devices = Device.objects.filter(user__username=user)
+    available_measurement_groups = MeasurementsGroup.objects.filter(
+            mg_sensors__isnull=True,
+            user__username=user)
+    
+    all_measurement_groups = MeasurementsGroup.objects.filter(
+        user__username=user
+    )
+
+    return Response({
+        "devices":DeviceSerializer(devices,many=True).data,
+        "available_measurement_groups":MeasurementGroupSerializer(available_measurement_groups,many=True).data,
+        "all_measurement_groups":MeasurementGroupSerializer(all_measurement_groups,many=True).data,
+    })
+
+
+@api_view(['GET'])
 def getSingleDevice(request, deviceId):
     user = "marcin"
-    devices = Device.objects.get(
+    device = Device.objects.get(
         user__username=user,
         id=deviceId)
-    serializer = DeviceSerializer(devices)
-    return Response(serializer.data)
+    available_measurement_groups = MeasurementsGroup.objects.filter(
+            mg_sensors__isnull=True,
+            user__username=user)
+
+    return Response({
+        "device":DeviceSerializer(device).data,
+        "available_measurement_groups":MeasurementGroupSerializer(available_measurement_groups,many=True).data,
+    })
 
 
 @api_view(['GET'])
@@ -122,3 +147,44 @@ def updateDeviceConfig(request):
         return Response(serializer.data, status=200)
          
     return Response(serializer.errors, status=400)
+
+
+@api_view(['POST'])
+def updateMeasureGroups(request):
+    user=User.objects.get(
+        username="marcin"
+    )
+    
+    # usuwanie grup
+    user_measure_groups = MeasurementsGroup.objects.filter(
+        user=user
+    )
+
+    new_groups_ids = [group["id"] for group in request.data]
+    
+    for group in user_measure_groups:
+        if group.id not in new_groups_ids:
+            group.delete()
+
+    
+
+    for group in request.data:
+        group_id = group.get("id")
+        
+        if group_id > -1:
+            try:
+                existing_group = MeasurementsGroup.objects.get(id=group_id)
+            except:
+                continue
+            
+            serializer = MeasurementGroupCreateSerializer(existing_group,data=group,partial=True)
+        else:
+            
+            serializer = MeasurementGroupCreateSerializer(data=group)
+
+        if serializer.is_valid():
+            serializer.save(user=user)
+        else:
+            return Response({"status:'ERROR'"}, status=400)
+
+    return Response({"status:'OK'"}, status=200)

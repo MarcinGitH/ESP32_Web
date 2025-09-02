@@ -32,7 +32,7 @@ class MeasurementsGroup(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='measurements_group')
     name = models.CharField(max_length=100)
-    created_at = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "name")

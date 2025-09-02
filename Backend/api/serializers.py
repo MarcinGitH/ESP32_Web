@@ -3,9 +3,18 @@ from EspServer.models import SensorData, Sensor, Device, AddDeviceToken, Measure
 from django.utils import timezone
 from datetime import timedelta
 
+class MeasurementGroupCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(allow_blank=False, required=True)
+    # created_at = serializers.DateTimeField(read_only=True)
+    class Meta:
+        model = MeasurementsGroup
+        fields = ["id", "name"]
 
 class MeasurementGroupSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=True)
+    id = serializers.IntegerField()
+    name = serializers.CharField(allow_blank=False, required=True)
+    # created_at = serializers.DateTimeField(read_only=True)
     class Meta:
         model = MeasurementsGroup
         fields = ["id", "name"]
@@ -91,30 +100,19 @@ class SensorGroupUpdateSerializer(serializers.Serializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     sensors = serializers.SerializerMethodField()
-    available_measurement_groups = serializers.SerializerMethodField()
+
     # online = serializers.SerializerMethodField()
 
     class Meta:
         model = Device
         fields = ["id", "device_serial_number", "name",
-                  "online", "sensors", "available_measurement_groups"]
+                  "online", "sensors"]
 
     def get_sensors(self, obj):
         sensor_data = obj.sensors.all()
         return SensorWithActualDataSerializer(sensor_data, many=True).data
 
-    def get_available_measurement_groups(self, obj):
-        return MeasurementGroupSerializer(MeasurementsGroup.objects.filter(
-            mg_sensors__isnull=True,
-            user=obj.user), many=True).data
 
-    # def get_online(self, obj):
-    #     time_threshold = timezone.now() - timedelta(minutes=2)
-    #     # sprawdzamy czy istnieją jakieś dane nowsze niż próg
-    #     return SensorData.objects.filter(
-    #         sensor__device=obj,
-    #         timestamp__gte=time_threshold
-    #     ).exists()
 
 
 class AddDeviceTokenSerializer(serializers.ModelSerializer):
@@ -163,7 +161,7 @@ class DeviceUpdateSerializer(serializers.ModelSerializer):
             if (sensor.sensor_id not in sensors_id_update_list):
                 sensor.delete()
 
-
+        print(sensor_data)
         # aktualizacja sensorów
         for sensor_data in sensors_data:
                 sensor,created=Sensor.objects.get_or_create(
