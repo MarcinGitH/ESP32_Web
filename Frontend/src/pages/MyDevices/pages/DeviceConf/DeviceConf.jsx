@@ -105,8 +105,15 @@ const DeviceConf = () => {
 
   const sendGroups = async () => {
     try {
+      const token = localStorage.getItem("accessToken")
+      const config = token ? {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      } : {}
+
       await toast.promise(
-        axios.post('http://127.0.0.1:8000/api/devices/update-measure-groups', allGroupList),
+        axios.post('http://127.0.0.1:8000/api/devices/update-measure-groups', allGroupList, config),
         {
           pending: {
             render: 'Łączenie z serwerem...',

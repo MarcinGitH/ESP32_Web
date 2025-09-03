@@ -13,9 +13,10 @@ urlpatterns = [
     path("devices/update-measure-groups", updateMeasureGroups),
     path("devices/delete-devices", deleteDevices),
 
-    #user 
+    # user
     path("register", UserRegistrationAPIView.as_view()),
     path("login", UserLoginAPIView.as_view()),
     path("logout", UserLogoutAPIView.as_view()),
     path("token/refresh", TokenRefreshView.as_view()),
+    path("user", UserInfoAPIView.as_view()),
 ]

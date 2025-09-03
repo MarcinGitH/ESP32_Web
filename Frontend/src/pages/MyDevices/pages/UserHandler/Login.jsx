@@ -1,34 +1,41 @@
-import React, { useContext, useState } from 'react'
+
 import axios from 'axios'
-import { ToastContainer, toast, Bounce } from 'react-toastify';
+import React, { useContext, useState } from 'react'
 import { motion } from 'framer-motion';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
-
-const Register = () => {
+const Login = () => {
     const [formData, setFormData] = useState({
-        username: "",
         email: "",
-        password1: "",
-        password2: "",
+        password: "",
     })
 
     const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
     const { setLoggedIn, setUsername } = useContext(AuthContext);
+
+
     const handleChange = (e) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
 
-    const login = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (isLoading) return;
+        setIsLoading(true);
 
         try {
             const response = await toast.promise(
-                axios.post('http://127.0.0.1:8000/api/login', { email: formData.email, password: formData.password1 }),
+                axios.post('http://127.0.0.1:8000/api/login', formData),
                 {
                     pending: {
                         render: 'Łączenie z serwerem...',
+                        className: 'toast-background',
+                    },
+                    success: {
+                        render: 'Zalogowano pomyślnie',
                         className: 'toast-background',
                     },
                     error: {
@@ -59,56 +66,9 @@ const Register = () => {
             navigate("../my-devices")
         } catch (error) {
             console.log("Błąd przy logowaniu")
+        } finally {
+            setIsLoading(false);
         }
-    }
-
-    const handleSubmit = async (e) => {
-
-        e.preventDefault()
-        if (isLoading) {
-            return
-        }
-        setIsLoading(true)
-
-        try {
-            await toast.promise(
-                axios.post('http://127.0.0.1:8000/api/register', formData),
-                {
-                    pending: {
-                        render: 'Łączenie z serwerem...',
-                        className: 'toast-background',
-                    },
-                    success: {
-                        render: 'Konto zostało utworzone',
-                        className: 'toast-background',
-                    },
-                    error: {
-                        render({ data }) {
-                            if (data.response) {
-                                const errors = Object.values(data.response.data);
-                                return (
-                                    <div>
-                                        {errors.map((msg, idx) => (
-                                            <div key={idx}>{msg}</div>
-                                        ))}
-                                    </div>
-                                );
-                            }
-                            return "Błąd zapisu (brak odpowiedzi serwera)";
-                        },
-                    }
-                }
-            )
-            login()
-        }
-        catch (error) {
-            console.log("Błąd przy rejestracji", error.response?.data)
-        }
-
-        finally {
-            setIsLoading(false)
-        }
-
     }
 
     return (
@@ -122,7 +82,7 @@ const Register = () => {
                 transition={Bounce}
             />
             <motion.div
-                className='mx-auto w-110 h-110 bg-gray-700 rounded-3xl'
+                className='mx-auto w-110 h-80 bg-gray-700 rounded-3xl'
                 initial={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
                 animate={{ opacity: 1 }}
@@ -130,26 +90,21 @@ const Register = () => {
             >
 
                 <form className='px-10 flex flex-col justify-center gap-5'>
-                    <h2 className=' text-center pt-5 text-3xl'>Rejestracja</h2>
+                    <h2 className=' text-center pt-5 text-3xl'>Logowanie</h2>
                     <div className='flex flex-col w-70 gap-1 mx-auto'>
-                        <p>Nazwa użytkownika:</p>
-                        <input type="text" name='username' onChange={handleChange} value={formData.username} className='bg-gray-600 px-2 py-1 rounded-md' />
                         <p>Email:</p>
                         <input type="email" name='email' onChange={handleChange} value={formData.email} className='bg-gray-600 px-2 py-1 rounded-md' />
                         <p>Hasło:</p>
-                        <input type="password" name='password1' onChange={handleChange} value={formData.password1} className='bg-gray-600 px-2 py-1 rounded-md' />
-                        <p>Powtórz hasło:</p>
-                        <input type="password" name='password2' onChange={handleChange} value={formData.password2} className='bg-gray-600 px-2 py-1 rounded-md' />
+                        <input type="password" name='password' onChange={handleChange} value={formData.password} className='bg-gray-600 px-2 py-1 rounded-md' />
                     </div>
 
                     {/* <br /> */}
-                    <button type="submit" disabled={isLoading} onClick={handleSubmit} className='mx-auto button disabled:bg-gray-500 disabled:pointer-events-none'>Zarejestruj się</button>
+                    <button type="submit" disabled={isLoading} onClick={handleSubmit} className='mx-auto button disabled:bg-gray-500 disabled:pointer-events-none'>Zaloguj</button>
                 </form>
 
             </motion.div>
         </div>
-
     )
 }
 
-export default Register
+export default Login

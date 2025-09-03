@@ -14,6 +14,9 @@ import DetailsCard from './pages/MyDevices/pages/LiveView/DetailsCard'
 import AddNewDevice from './pages/MyDevices/pages/DeviceConf/AddNewDevice'
 import ConfigureDevice from './pages/MyDevices/pages/DeviceConf/ConfigureDevice'
 import Register from './pages/MyDevices/pages/UserHandler/Register'
+import Login from './pages/MyDevices/pages/UserHandler/Login'
+import { AuthProvider } from './pages/MyDevices/pages/UserHandler/AuthContext'
+
 
 const App = () => {
     return (
@@ -23,25 +26,26 @@ const App = () => {
                 className="fixed inset-0 -z-10  bg-cover bg-center h-screen"
                 style={{ backgroundImage: `url(${assets.background_start})` }}>
             </div>
-
-            <Routes>
-                <Route path='/' element={<MainLayout />}>
-                    <Route index element={<AboutProject />} />
-                    <Route path='register' element={<Register />} />
-                    <Route path='how-to-start' element={<HowToStart />} />
-                    <Route path='my-devices' element={<SidebarLayout />}>
-                        <Route index element={<Navigate to="live-view" replace />} />
-                        <Route path='live-view' element={<LiveView />} />
-                        <Route path='dashboards' element={<Dashboard />} />
-                        <Route path='device-conf' element={<DeviceConf />} />
-                        <Route path='device-conf/add-new' element={<AddNewDevice />} />
-                        <Route path='device-conf/configure-device/:deviceId' element={<ConfigureDevice />} />
+            <AuthProvider>
+                <Routes>
+                    <Route path='/' element={<MainLayout />}>
+                        <Route index element={<AboutProject />} />
+                        <Route path='register' element={<Register />} />
+                        <Route path='login' element={<Login />} />
+                        <Route path='how-to-start' element={<HowToStart />} />
+                        <Route path='my-devices' element={<SidebarLayout />}>
+                            <Route index element={<Navigate to="live-view" replace />} />
+                            <Route path='live-view' element={<LiveView />} />
+                            <Route path='dashboards' element={<Dashboard />} />
+                            <Route path='device-conf' element={<DeviceConf />} />
+                            <Route path='device-conf/add-new' element={<AddNewDevice />} />
+                            <Route path='device-conf/configure-device/:deviceId' element={<ConfigureDevice />} />
+                        </Route>
+                        <Route path='download' element={<Download />} />
                     </Route>
-                    <Route path='download' element={<Download />} />
-                </Route>
-                <Route path='/details-card/:measurementsGroup' element={<DetailsCard />} />
-            </Routes>
-
+                    <Route path='/details-card/:measurementsGroup' element={<DetailsCard />} />
+                </Routes>
+            </AuthProvider>
         </div>
     )
 }

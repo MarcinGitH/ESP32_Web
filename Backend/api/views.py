@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import *
-from rest_framework.permissions import AllowAny,IsAuthenticated
-from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
@@ -16,40 +16,42 @@ import time
 from django.contrib.auth import get_user_model
 
 
-#User views
+# User views
 class UserRegistrationAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
 
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token = RefreshToken.for_user(user)
         data = serializer.data
-        data["tokens"] = {"refresh":str(token),
-                          "access":str(token.access_token)}
-        return Response(data,status=status.HTTP_201_CREATED)
+        data["tokens"] = {"refresh": str(token),
+                          "access": str(token.access_token)}
+        return Response(data, status=status.HTTP_201_CREATED)
+
 
 class UserLoginAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserLoginSerializer
 
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception = True)
-        user = serializer.validate_data
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data
         serializer = CustomUserSerializer(user)
         token = RefreshToken.for_user(user)
         data = serializer.data
-        data["tokens"] = {"refresh":str(token),
-                          "access":str(token.access_token)}
-        return Response(data,status=status.HTTP_200_OK)
-    
-class UserLogoutAPIView(GenericAPIView):
-    permission_classes = (IsAuthenticated,)
+        data["tokens"] = {"refresh": str(token),
+                          "access": str(token.access_token)}
+        return Response(data, status=status.HTTP_200_OK)
 
-    def post(self,request,*args, **kwargs):
+
+class UserLogoutAPIView(GenericAPIView):
+    # permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
         try:
             refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
@@ -59,6 +61,12 @@ class UserLogoutAPIView(GenericAPIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserInfoAPIView(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CustomUserSerializer
+
+    def get_object(self):
+        return self.request.user
 
 
 @api_view(['GET'])
@@ -74,10 +82,11 @@ def getData24h(request, measurements_group_id):
         return Response({"error": "Sensor not found"}, status=200)
 
     serializer = SensorWithData24hSerializer(sensor)
-    return Response(serializer.data)
+    return Response(serializer.data,)
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def userSensorsActual(request):
     user = "marcin"
     sensors = Sensor.objects.filter(device__user__username=user)
@@ -86,6 +95,7 @@ def userSensorsActual(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def updateSensorsGroup(request):
     serializer = SensorGroupUpdateSerializer(data=request.data, many=True)
     if serializer.is_valid():
@@ -199,6 +209,7 @@ def updateDeviceConfig(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def updateMeasureGroups(request):
     User = get_user_model()
     user = User.objects.get(

@@ -1,11 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
-
+import React, { useContext, useEffect, useState } from 'react';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { Navigate, useNavigate } from 'react-router-dom';
 import SensorCard from './SensorCard';
 import axios from 'axios';
-import { div } from 'framer-motion/client';
+import { div, h2 } from 'framer-motion/client';
+import { AuthContext } from '../UserHandler/AuthContext';
 
 const LiveView = () => {
   const [groupMode, setGroupMode] = useState(false)
@@ -14,13 +15,54 @@ const LiveView = () => {
   const [allSensors, setAllSensors] = useState([])
   const [serverConnectOk, setServerConnectOk] = useState(false)
   const navigate = useNavigate()
-
+  const { loggedIn, username, setLoggedIn, setUsername } = useContext(AuthContext);
 
 
   useEffect(() => {
+
+    const checkLoggedIn = async () => {
+      try {
+        const token = localStorage.getItem("accessToken")
+        if (token) {
+          const config = {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
+          const response = await axios.get("http://127.0.0.1:8000/api/user", config)
+          console.log(response)
+          setLoggedIn(true)
+          setUsername(response.data.username)
+        }
+        else {
+          setLoggedIn(false)
+          setUsername("")
+        }
+      }
+      catch (error) {
+        setLoggedIn(false)
+        setUsername("")
+      }
+    }
+
+    checkLoggedIn()
+
+    if (!loggedIn) {
+      navigate("../../login")
+    }
+
+
+
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-all-sensors`)
+        const token = localStorage.getItem("accessToken")
+        const config = token ? {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        } : {}
+
+        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-all-sensors`, config)
 
         setAllSensors(res.data)
         setServerConnectOk(true)
@@ -29,10 +71,19 @@ const LiveView = () => {
         console.error(error)
         setAllSensors([])
         setServerConnectOk(false)
+        if (error.response?.status === 401) {
+          navigate("../../login")
+        }
       }
-    };
+    }
 
     fetchData()
+
+    const justLoggedIn = localStorage.getItem("justLoggedIn")
+    if (justLoggedIn) {
+      toast.success("Zalogowano pomyślnie")
+      localStorage.removeItem("justLoggedIn")
+    }
 
     const interval = setInterval(fetchData, 5000);
 
@@ -55,6 +106,12 @@ const LiveView = () => {
   const confirmGroup = async () => {
     const data = selectedSensors.map(s => ({ id: s, group_name: groupName }))
     try {
+      const token = localStorage.getItem("accessToken")
+      const config = token ? {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      } : {}
       await axios.post("http://127.0.0.1:8000/api/devices/update-sensors-group", data)
     }
     catch {
@@ -125,6 +182,14 @@ const LiveView = () => {
 
   return (
     <div className='w-full h-auto'>
+      <ToastContainer
+        position="top-right"
+        autoClose={1500}
+        theme="dark"
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        transition={Bounce}
+      />
       <motion.div
         className='flex flex-col justify-center px-1 sm:px-20 mt-10'
         initial={{ opacity: 0 }}
@@ -138,6 +203,7 @@ const LiveView = () => {
         :
         <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'>
           {groupBar}
+          {!groups.length > 0 && <h2 className='text-gray-400 text-4xl pb-5'>Brak skonfigurowanych czujników</h2>}
           {groups.map((group, index) => (
             <div key={index}>
               <h2 className='text-gray-300 text-3xl font-bold my-10 w-full text-center bg-gray-700 rounded-md'>{group}</h2>

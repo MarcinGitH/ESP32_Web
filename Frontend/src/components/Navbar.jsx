@@ -1,7 +1,10 @@
-import React, { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import { div, li } from 'framer-motion/client'
+import axios from 'axios'
+import { useContext } from "react";
+import { AuthContext } from '../pages/MyDevices/pages/UserHandler/AuthContext'
 
 
 
@@ -15,7 +18,27 @@ const Navbar = () => {
     ];
 
     const [menuBarShow, setMenuBarShow] = useState(false)
+    const { loggedIn, username, setLoggedIn, setUsername } = useContext(AuthContext);
+    const navigate = useNavigate()
 
+
+
+    const handleLogout = async () => {
+        try {
+            const refreshToken = localStorage.getItem("refreshToken")
+            if (refreshToken) {
+                await axios.post("http://127.0.0.1:8000/api/logout", { "refresh": refreshToken })
+                localStorage.removeItem("accessToken")
+                localStorage.removeItem("refreshToken")
+                setLoggedIn(false)
+                setUsername("")
+                navigate("/")
+            }
+        }
+        catch (error) {
+            console.log("Nieprawidłowe wylogowanie")
+        }
+    }
 
     return (
         <div>
@@ -30,14 +53,23 @@ const Navbar = () => {
                             ))}
                         </ul>
                     </div>
-                    <div className='hidden lg:block'>
-                        <ul className='flex gap-5 items-center'>
-                            <NavLink to={"/login"}><li className='login-button bg-gray-200 hover:bg-black'>Zaloguj się</li></NavLink>
-                            <NavLink to={"/register"}><li className='login-button'>Zarejestruj się</li></NavLink>
-                        </ul>
-                    </div>
+                    {loggedIn
+                        ?
+                        <div className='hidden lg:block'>
+                            <span className='text-gray-300 text-xl'>{username}</span>
+                            <button type="button" className='login-button cursor-pointer ml-5' onClick={handleLogout} >Wyloguj</button>
+                        </div>
+                        :
+                        <div className='hidden lg:block'>
+                            <ul className='flex gap-5 items-center'>
+                                <NavLink to={"/login"}><li className='login-button bg-gray-200 hover:bg-black'>Zaloguj się</li></NavLink>
+                                <NavLink to={"/register"}><li className='login-button'>Zarejestruj się</li></NavLink>
+                            </ul>
+                        </div>
+                    }
+
                     <img className='lg:hidden h-1/2 cursor-pointer' onClick={() => setMenuBarShow(!menuBarShow)} src={assets.menuBar} alt="" />
-                </div>w
+                </div>
             </div>
 
             {/* Menu mobilne */}
