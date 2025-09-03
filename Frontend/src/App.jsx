@@ -13,7 +13,7 @@ import DeviceConf from './pages/MyDevices/pages/DeviceConf/DeviceConf'
 import DetailsCard from './pages/MyDevices/pages/LiveView/DetailsCard'
 import AddNewDevice from './pages/MyDevices/pages/DeviceConf/AddNewDevice'
 import ConfigureDevice from './pages/MyDevices/pages/DeviceConf/ConfigureDevice'
-
+import Register from './pages/MyDevices/pages/UserHandler/Register'
 
 const App = () => {
     return (
@@ -27,6 +27,7 @@ const App = () => {
             <Routes>
                 <Route path='/' element={<MainLayout />}>
                     <Route index element={<AboutProject />} />
+                    <Route path='register' element={<Register />} />
                     <Route path='how-to-start' element={<HowToStart />} />
                     <Route path='my-devices' element={<SidebarLayout />}>
                         <Route index element={<Navigate to="live-view" replace />} />

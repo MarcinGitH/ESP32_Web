@@ -1,0 +1,106 @@
+import React, { useState } from 'react'
+import axios from 'axios'
+import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { motion } from 'framer-motion';
+
+
+const Register = () => {
+    const [formData,setFormData] = useState({
+        username:"",
+        email:"",
+        password1:"",
+        password2:"",
+    })
+
+    const [isLoading,setIsLoading] = useState(false)
+
+const handleChange = (e)=>{
+    console.log(isLoading)
+    setFormData(prev => ({...prev,[e.target.name]:e.target.value}))
+}
+
+const handleSubmit = async (e) =>{
+    console.log("xd")
+    e.preventDefault()
+    if(isLoading){
+        console.log("xd")
+        return
+    }
+    setIsLoading(true)
+    console.log("xd")
+    try{
+        await toast.promise(
+            axios.post('http://127.0.0.1:8000/api/register',formData),
+            {
+            pending: {
+                render: 'Łączenie z serwerem...',
+                className: 'toast-background',
+            },
+            success: {
+                render: 'Konto zostało utworzone',
+                className: 'toast-background',
+            },
+            error: {
+            render({ data }) {
+                if (data.response) {
+                    // np. walidacja DRF zwraca { email: ["już istnieje"] }
+                    return `Błąd: ${JSON.stringify(data.response.data)}`;
+                }
+                return "Błąd zapisu (brak odpowiedzi serwera)";
+                },
+            }
+        }
+      )
+    }
+    catch (error){
+        console.log("Błąd przy rejestracji",error.response?.data)
+    }
+
+    finally{
+        setIsLoading(false)
+    }
+
+}
+
+  return (
+    <div className='flex mt-40 w-full min-h-screen text-gray-300'>
+        <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                theme="dark"
+                pauseOnFocusLoss={false}
+                pauseOnHover={false}
+                transition={Bounce}
+              />
+        <motion.div
+                className='mx-auto w-110 h-110 bg-gray-700 rounded-3xl'
+                initial={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                animate={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
+            
+            <form className='px-10 flex flex-col justify-center gap-5'>
+                <h2 className=' text-center pt-5 text-3xl'>Rejestracja</h2>
+                <div className='flex flex-col w-70 gap-1 mx-auto'>
+                    <p>Nazwa użytkownika:</p>
+                    <input type="text" name='username' onChange={handleChange} value={formData.username} className='bg-gray-600 px-2 py-1 rounded-md' />
+                    <p>Email:</p>
+                    <input type="email" name='email' onChange={handleChange} value={formData.email} className='bg-gray-600 px-2 py-1 rounded-md'/>
+                    <p>Hasło:</p>
+                    <input type="password" name='password1' onChange={handleChange} value={formData.password1} className='bg-gray-600 px-2 py-1 rounded-md'/>
+                    <p>Powtórz hasło:</p>
+                    <input type="password" name='password2' onChange={handleChange} value={formData.password2} className='bg-gray-600 px-2 py-1 rounded-md'/>
+                </div>
+                
+                {/* <br /> */}
+                <button type = "submit" disabled={isLoading} onClick={handleSubmit} className='mx-auto button disabled:bg-gray-500 disabled:pointer-events-none'>Zarejestruj się</button>
+            </form>
+        
+        </motion.div> 
+    </div>
+    
+  )
+}
+
+export default Register

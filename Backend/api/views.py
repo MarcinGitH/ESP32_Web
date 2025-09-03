@@ -1,15 +1,64 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import MeasurementGroupCreateSerializer, MeasurementGroupSerializer, SensorWithData24hSerializer, SensorWithActualDataSerializer, SensorGroupUpdateSerializer, DeviceSerializer, AddDeviceTokenSerializer, DeviceUpdateSerializer
+from .serializers import *
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework.generics import GenericAPIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
 from datetime import datetime, timedelta
-from EspServer.models import Sensor, Device, AddDeviceToken, User, MeasurementsGroup
+from EspServer.models import Sensor, Device, AddDeviceToken, MeasurementsGroup
 from django.utils import timezone
 from datetime import timedelta
 import secrets
 import time
+from django.contrib.auth import get_user_model
+
+
+#User views
+class UserRegistrationAPIView(GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserRegistrationSerializer
+
+    def post(self,request,*args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        token = RefreshToken.for_user(user)
+        data = serializer.data
+        data["tokens"] = {"refresh":str(token),
+                          "access":str(token.access_token)}
+        return Response(data,status=status.HTTP_201_CREATED)
+
+class UserLoginAPIView(GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserLoginSerializer
+
+    def post(self,request,*args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception = True)
+        user = serializer.validate_data
+        serializer = CustomUserSerializer(user)
+        token = RefreshToken.for_user(user)
+        data = serializer.data
+        data["tokens"] = {"refresh":str(token),
+                          "access":str(token.access_token)}
+        return Response(data,status=status.HTTP_200_OK)
+    
+class UserLogoutAPIView(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self,request,*args, **kwargs):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 @api_view(['GET'])
@@ -109,7 +158,7 @@ def getAddDeviceToken(request):
 
     # usuwanie starych tokenow
     AddDeviceToken.objects.filter(expires_at__lt=timezone.now()).delete()
-
+    User = get_user_model()
     user = User.objects.get(username=username)
     device_token = AddDeviceToken.objects.filter(
         user=user,
@@ -151,6 +200,7 @@ def updateDeviceConfig(request):
 
 @api_view(['POST'])
 def updateMeasureGroups(request):
+    User = get_user_model()
     user = User.objects.get(
         username="marcin"
     )

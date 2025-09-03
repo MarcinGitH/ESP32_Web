@@ -1,12 +1,20 @@
 
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,AbstractUser
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
 
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
+
+    def __str__(self):
+        return self.username
 
 class AddDeviceToken(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     token = models.CharField(max_length=12, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
@@ -17,7 +25,7 @@ class AddDeviceToken(models.Model):
 
 class Device(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='devices')
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
     device_serial_number = models.CharField(max_length=100, unique=True)
     # opcjonalna nazwa urządzenia
     name = models.CharField(max_length=100,default="Nadaj nazwę")
@@ -30,7 +38,7 @@ class Device(models.Model):
 
 class MeasurementsGroup(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='measurements_group')
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='measurements_group')
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
