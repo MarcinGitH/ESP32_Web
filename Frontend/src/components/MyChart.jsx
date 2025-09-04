@@ -61,13 +61,28 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
     })
   }, []);
 
+  // ustawienie min max na osi y na wykresie
+  useEffect(() => {
+    if (data.length == 0) return
+
+    const range = 2
+    const values = data.map(d => d.value).filter(d => d != null)
+    const min = Math.min(...values) - range
+    const max = Math.max(...values) + range
+
+
+    chartRef.current.options.scales.y.min = Math.round(min)
+    chartRef.current.options.scales.y.max = Math.round(max)
+
+  }, [data])
+
 
   const toggleFullscreen = () => {
 
-    if(!document.fullscreenElement){
+    if (!document.fullscreenElement) {
       fullScreenRef.current.requestFullscreen()
     }
-    else{
+    else {
       document.exitFullscreen()
     }
   }
@@ -122,17 +137,21 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
 
       },
       y: {
+
         grid: {
           color: "rgb(100, 100, 100)",
 
         },
         ticks: {
           color: "rgb(210, 210, 210)",
+          // stepSize: 0.5,
+
         }
       }
     },
 
     plugins: {
+
       zoom: {
         pan: {
           enabled: true,
@@ -187,7 +206,7 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
 
   return (
     <div className=' flex-auto h-100 sm:h-100 md:h-120 lg:h-150 min-w-[200px] sm:min-w-[280px] pb-25 pl-5 pr-5 bg-gray-600 rounded-xl relative'
-        ref={fullScreenRef}>
+      ref={fullScreenRef}>
       {!serverConnectOk &&
         <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 px-10 py-10 w-max rounded-3xl'>
           <h2 className='text-3xl text-gray-300'>Brak połączenia z serwerem</h2>
@@ -200,7 +219,7 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
         >Zoom reset</button>
       }
       <img src={assets.expand} alt="" className='w-10 absolute top-5 right-5 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
-          onClick={toggleFullscreen}/>
+        onClick={toggleFullscreen} />
 
       <h2 className='text-center text-gray-300 text-l md:text-2xl mb-10 mt-3'>{title}</h2>
       <Line ref={chartRef} options={chartOptions} data={chartData} className={ctrlKeyDown ? "hover:cursor-move" : ""} />

@@ -42,11 +42,11 @@ def run_mqtt_client():
         time.sleep(1)
 
 
-# class EspServerConfig(AppConfig):
-#     default_auto_field = "django.db.models.BigAutoField"
-#     name = "EspServer"
+class EspServerConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "EspServer"
 
-#     def ready(self):
-#         # uruchamiamy klienta w osobnym wątku, aby nie blokować Django
-#         thread = threading.Thread(target=run_mqtt_client, daemon=True)
-#         thread.start()
+    def ready(self):
+        # uruchamiamy klienta w osobnym wątku, aby nie blokować Django
+        thread = threading.Thread(target=run_mqtt_client, daemon=True)
+        thread.start()

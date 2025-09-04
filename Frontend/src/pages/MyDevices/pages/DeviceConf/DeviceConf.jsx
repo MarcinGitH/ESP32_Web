@@ -45,9 +45,9 @@ const DeviceConf = () => {
 
     fetchData()
 
-    // const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 5000);
 
-    // return () => clearInterval(interval)
+    return () => clearInterval(interval)
 
   }, [])
 
@@ -131,8 +131,8 @@ const DeviceConf = () => {
     catch (error) {
       console.error(error)
       if (error.response?.status === 401) {
-          navigate("/login")
-        }
+        navigate("/login")
+      }
     }
   }
 
@@ -159,8 +159,8 @@ const DeviceConf = () => {
     catch (error) {
       console.error(error)
       if (error.response?.status === 401) {
-          navigate("/login")
-        }
+        navigate("/login")
+      }
     }
   }
 

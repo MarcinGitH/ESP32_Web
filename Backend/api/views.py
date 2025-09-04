@@ -79,7 +79,7 @@ def getData24h(request, measurements_group_id):
         device__user=user,
         measurements_group=measurements_group_id
     ).first()
-
+    print(sensor.id)
     if not sensor:
         return Response({"error": "Sensor not found"}, status=200)
 
@@ -105,7 +105,7 @@ def updateSensorsGroup(request):
         results = []
         for item in serializer.validated_data:
             try:
-                sensor = Sensor.objects.get(id=item['id'],device__user=user)
+                sensor = Sensor.objects.get(id=item['id'], device__user=user)
                 sensor.group_name = item['group_name']
                 sensor.save()
                 results.append({
@@ -175,7 +175,7 @@ def getAddDeviceToken(request):
 
     # usuwanie starych tokenow
     AddDeviceToken.objects.filter(expires_at__lt=timezone.now()).delete()
-    
+
     device_token = AddDeviceToken.objects.filter(
         user=user,
         expires_at__gt=timezone.now()
@@ -220,7 +220,7 @@ def updateDeviceConfig(request):
 def updateMeasureGroups(request):
 
     user = request.user
-    
+
     # usuwanie grup
     user_measure_groups = MeasurementsGroup.objects.filter(
         user=user

@@ -2,7 +2,7 @@ import json
 import paho.mqtt.client as mqtt
 from datetime import datetime
 from .models import Device, Sensor, SensorData, AddDeviceToken
-from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Cykliczne wysylanie danych przez ESP
 
@@ -45,7 +45,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def cyclicData(payload):
-    user = User.objects.get(username="marcin")
+
     sensors = payload.get("sensors")
     device_serial_number = payload.get("device_serial_number")
 
@@ -153,8 +153,20 @@ def sendConfig(client, payload, device_serial_number):
     client.publish("setConfig/config/" + device_serial_number, payload)
 
 
+def pingHandle(client, payload, device_serial_number):
+    try:
+        device = Device.objects.get(device_serial_number=device_serial_number)
+        pingStatus = payload.get("ping_status", "")
+        if pingStatus == "OK":
+            device.last_seen = timezone.now()
+            device.save()
+            print("Ping: " + device_serial_number)
+    except:
+        pass
+
+
 def on_message(client, userdata, msg):
-    user = User.objects.get(username="marcin")
+
     payload = json.loads(msg.payload.decode())
     topic_parts = msg.topic.split("/")
 
@@ -162,6 +174,8 @@ def on_message(client, userdata, msg):
         cyclicData(payload)
     elif (topic_parts[0] == topics["firstConfigGetToken"]):
         firstConfig(client, payload, topic_parts[1])
+    elif (topic_parts[0] == "ping"):
+        pingHandle(client, payload, topic_parts[1])
     elif (topic_parts[0] == "setConfig" and topic_parts[1] == "request"):
         sendConfig(client, payload, topic_parts[2])
 
