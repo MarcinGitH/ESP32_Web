@@ -7,6 +7,7 @@ import SensorCard from './SensorCard';
 import axios from 'axios';
 import { div, h2 } from 'framer-motion/client';
 import { AuthContext } from '../UserHandler/AuthContext';
+import api from '../../../../components/api.js'
 
 const LiveView = () => {
   const [groupMode, setGroupMode] = useState(false)
@@ -22,47 +23,28 @@ const LiveView = () => {
 
     const checkLoggedIn = async () => {
       try {
-        const token = localStorage.getItem("accessToken")
-        if (token) {
-          const config = {
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          }
-          const response = await axios.get("http://127.0.0.1:8000/api/user", config)
-          console.log(response)
+        
+          const response = await api.get("/user")
           setLoggedIn(true)
           setUsername(response.data.username)
         }
-        else {
-          setLoggedIn(false)
-          setUsername("")
-        }
-      }
       catch (error) {
         setLoggedIn(false)
         setUsername("")
+        if (error.response?.status === 401) {
+          navigate("/login")
+        }
       }
     }
 
     checkLoggedIn()
 
-    if (!loggedIn) {
-      navigate("../../login")
-    }
-
+   
 
 
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("accessToken")
-        const config = token ? {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        } : {}
-
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-all-sensors`, config)
+        const res = await api.get(`/devices/get-all-sensors`)
 
         setAllSensors(res.data)
         setServerConnectOk(true)
@@ -72,7 +54,7 @@ const LiveView = () => {
         setAllSensors([])
         setServerConnectOk(false)
         if (error.response?.status === 401) {
-          navigate("../../login")
+          navigate("/login")
         }
       }
     }
@@ -106,13 +88,7 @@ const LiveView = () => {
   const confirmGroup = async () => {
     const data = selectedSensors.map(s => ({ id: s, group_name: groupName }))
     try {
-      const token = localStorage.getItem("accessToken")
-      const config = token ? {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      } : {}
-      await axios.post("http://127.0.0.1:8000/api/devices/update-sensors-group", data)
+      await api.post("/devices/update-sensors-group", data)
     }
     catch {
       console.error(err)

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { assets } from '../../../../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import api from '../../../../components/api.js'
 
 const AddNewDevice = () => {
     const navigate = useNavigate()
@@ -34,12 +35,15 @@ const AddNewDevice = () => {
         const getToken = async () => {
             if (!tokenRef.current || tokenRef.current.expires_at < Date.now()) {
                 try {
-                    const res = await axios.get("http://127.0.0.1:8000/api/devices/get-add-device-token")
+                    const res = await api.get("/devices/get-add-device-token")
                     setAddDeviceToken(res.data)
                     setServerOk(true)
                 }
-                catch {
+                catch(error) {
                     setServerOk(false)
+                    if (error.response?.status === 401) {
+                        navigate("/login")
+                        }
                 }
             }
             else {

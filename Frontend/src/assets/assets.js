@@ -7,7 +7,7 @@ import liveIcon from './icons/live.svg'
 import xmark from './icons/xmark.svg'
 import copy from './icons/copy.svg'
 import trash from './icons/trash.svg'
-
+import expand from './icons/expand.svg'
 
 
 
@@ -21,5 +21,6 @@ export const assets = {
     xmark,
     copy,
     trash,
+    expand,
 
 }

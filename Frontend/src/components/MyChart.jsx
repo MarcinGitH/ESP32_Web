@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Line } from "react-chartjs-2";
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { assets } from '../assets/assets';
 
 import {
   Chart as ChartJS,
@@ -21,6 +22,8 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
   const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   const [chartZoomed, setChartZoomed] = useState(false)
   const chartRef = useRef()
+  const fullScreenRef = useRef()
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   ChartJS.register(
     CategoryScale,
@@ -57,6 +60,18 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
       document.removeEventListener("keyup", keyup)
     })
   }, []);
+
+
+  const toggleFullscreen = () => {
+
+    if(!document.fullscreenElement){
+      fullScreenRef.current.requestFullscreen()
+    }
+    else{
+      document.exitFullscreen()
+    }
+  }
+
 
 
   const chartData = useMemo(() => ({
@@ -171,7 +186,8 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
 
 
   return (
-    <div className=' flex-auto h-100 sm:h-100 md:h-120 lg:h-150 min-w-[200px] sm:min-w-[280px] pb-25 pl-5 pr-5 bg-gray-600 rounded-xl relative'>
+    <div className=' flex-auto h-100 sm:h-100 md:h-120 lg:h-150 min-w-[200px] sm:min-w-[280px] pb-25 pl-5 pr-5 bg-gray-600 rounded-xl relative'
+        ref={fullScreenRef}>
       {!serverConnectOk &&
         <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 px-10 py-10 w-max rounded-3xl'>
           <h2 className='text-3xl text-gray-300'>Brak połączenia z serwerem</h2>
@@ -179,11 +195,12 @@ const MyChart = ({ data, title, filters, serverConnectOk }) => {
       }
       {chartZoomed &&
         <button type='button'
-          className='absolute top-10 right-5 text-xs lg:text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold'
+          className='absolute top-5 right-20 text-xs lg:text-xl px-3 py-2 text-gray-300 bg-cyan-700 rounded-xl hover:bg-cyan-600 cursor-pointer font-bold'
           onClick={() => resetZoom()}
         >Zoom reset</button>
       }
-
+      <img src={assets.expand} alt="" className='w-10 absolute top-5 right-5 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
+          onClick={toggleFullscreen}/>
 
       <h2 className='text-center text-gray-300 text-l md:text-2xl mb-10 mt-3'>{title}</h2>
       <Line ref={chartRef} options={chartOptions} data={chartData} className={ctrlKeyDown ? "hover:cursor-move" : ""} />

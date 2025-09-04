@@ -14,7 +14,7 @@ const Navbar = () => {
         { linkText: "O projekcie", path: "/" },
         { linkText: "Jak zacząć", path: "/how-to-start" },
         { linkText: "Moje urządzenia", path: "/my-devices" },
-        { linkText: "Pobierz", path: "/download" },
+        // { linkText: "Pobierz", path: "/download" },
     ];
 
     const [menuBarShow, setMenuBarShow] = useState(false)
@@ -36,7 +36,18 @@ const Navbar = () => {
             }
         }
         catch (error) {
-            console.log("Nieprawidłowe wylogowanie")
+            if(error.code === "ERR_NETWORK"){
+                localStorage.removeItem("accessToken")
+                localStorage.removeItem("refreshToken")
+                setLoggedIn(false)
+                setUsername("")
+                navigate("/")
+            }
+            else{
+                console.log("Nieprawidłowe wylogowanie")
+            }
+            
+            
         }
     }
 

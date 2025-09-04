@@ -14,6 +14,7 @@ from datetime import timedelta
 import secrets
 import time
 from django.contrib.auth import get_user_model
+import json
 
 
 # User views
@@ -70,11 +71,12 @@ class UserInfoAPIView(RetrieveAPIView):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getData24h(request, measurements_group_id):
-    user = "marcin"
+    user = request.user
 
     sensor = Sensor.objects.filter(
-        device__user__username=user,
+        device__user=user,
         measurements_group=measurements_group_id
     ).first()
 
@@ -88,8 +90,8 @@ def getData24h(request, measurements_group_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def userSensorsActual(request):
-    user = "marcin"
-    sensors = Sensor.objects.filter(device__user__username=user)
+    user = request.user
+    sensors = Sensor.objects.filter(device__user=user)
     serializer = SensorWithActualDataSerializer(sensors, many=True)
     return Response(serializer.data)
 
@@ -97,12 +99,13 @@ def userSensorsActual(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def updateSensorsGroup(request):
+    user = request.user
     serializer = SensorGroupUpdateSerializer(data=request.data, many=True)
     if serializer.is_valid():
         results = []
         for item in serializer.validated_data:
             try:
-                sensor = Sensor.objects.get(id=item['id'])
+                sensor = Sensor.objects.get(id=item['id'],device__user=user)
                 sensor.group_name = item['group_name']
                 sensor.save()
                 results.append({
@@ -119,23 +122,25 @@ def updateSensorsGroup(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getDevices(request):
-    user = "marcin"
-    devices = Device.objects.filter(user__username=user)
+    user = request.user
+    devices = Device.objects.filter(user=user)
     serializer = DeviceSerializer(devices, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getDeviceList(request):
-    user = "marcin"
+    user = request.user
     devices = Device.objects.filter(user__username=user)
     available_measurement_groups = MeasurementsGroup.objects.filter(
         mg_sensors__isnull=True,
-        user__username=user)
+        user=user)
 
     all_measurement_groups = MeasurementsGroup.objects.filter(
-        user__username=user
+        user=user
     )
 
     return Response({
@@ -146,10 +151,11 @@ def getDeviceList(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getSingleDevice(request, deviceId):
-    user = "marcin"
+    user = request.user
     device = Device.objects.get(
-        user__username=user,
+        user=user,
         id=deviceId)
     available_measurement_groups = MeasurementsGroup.objects.filter(
         mg_sensors__isnull=True,
@@ -162,14 +168,14 @@ def getSingleDevice(request, deviceId):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getAddDeviceToken(request):
-    username = "marcin"
+    user = request.user
     token_validity_min = 1
 
     # usuwanie starych tokenow
     AddDeviceToken.objects.filter(expires_at__lt=timezone.now()).delete()
-    User = get_user_model()
-    user = User.objects.get(username=username)
+    
     device_token = AddDeviceToken.objects.filter(
         user=user,
         expires_at__gt=timezone.now()
@@ -186,6 +192,7 @@ def getAddDeviceToken(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def updateDeviceConfig(request):
     # pobieramy device_id z JSON-a
     device_id = request.data.get("id")
@@ -211,11 +218,9 @@ def updateDeviceConfig(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def updateMeasureGroups(request):
-    User = get_user_model()
-    user = User.objects.get(
-        username="marcin"
-    )
 
+    user = request.user
+    
     # usuwanie grup
     user_measure_groups = MeasurementsGroup.objects.filter(
         user=user
@@ -251,10 +256,11 @@ def updateMeasureGroups(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def deleteDevices(request):
-    # pobieramy device_id z JSON-a
+    user = request.user
     all_devices = Device.objects.filter(
-        user__username="marcin"
+        user=user
     )
 
     devices_from_api = [device.get("id")

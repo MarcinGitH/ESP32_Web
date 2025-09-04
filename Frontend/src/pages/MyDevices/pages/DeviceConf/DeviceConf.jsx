@@ -4,6 +4,7 @@ import { assets } from '../../../../assets/assets'
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import api from '../../../../components/api.js'
 
 const DeviceConf = () => {
   const [devicesList, setDevicesList] = useState([])
@@ -18,7 +19,7 @@ const DeviceConf = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-devices`)
+        const res = await api.get(`/devices/get-devices`)
 
         setDevicesList(res.data.devices)
         if (!onceFetch.current) {
@@ -36,6 +37,9 @@ const DeviceConf = () => {
         setAllGroupList([])
         setAvailableGroupList([])
         setServerConnectOk(false)
+        if (error.response?.status === 401) {
+          navigate("/login")
+        }
       }
     };
 
@@ -105,15 +109,9 @@ const DeviceConf = () => {
 
   const sendGroups = async () => {
     try {
-      const token = localStorage.getItem("accessToken")
-      const config = token ? {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      } : {}
 
       await toast.promise(
-        axios.post('http://127.0.0.1:8000/api/devices/update-measure-groups', allGroupList, config),
+        api.post('/devices/update-measure-groups', allGroupList),
         {
           pending: {
             render: 'Łączenie z serwerem...',
@@ -132,13 +130,16 @@ const DeviceConf = () => {
     }
     catch (error) {
       console.error(error)
+      if (error.response?.status === 401) {
+          navigate("/login")
+        }
     }
   }
 
   const sendDevices = async () => {
     try {
       await toast.promise(
-        axios.post('http://127.0.0.1:8000/api/devices/delete-devices', devicesList), //wyslane maja pozostac
+        api.post('/devices/delete-devices', devicesList), //wyslane maja pozostac
         {
           pending: {
             render: 'Łączenie z serwerem...',
@@ -157,6 +158,9 @@ const DeviceConf = () => {
     }
     catch (error) {
       console.error(error)
+      if (error.response?.status === 401) {
+          navigate("/login")
+        }
     }
   }
 
@@ -164,7 +168,7 @@ const DeviceConf = () => {
     <div className=''>
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={1500}
         theme="dark"
         pauseOnFocusLoss={false}
         pauseOnHover={false}

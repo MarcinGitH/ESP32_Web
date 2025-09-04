@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import SensorsConfigList from './SensorsConfigList';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import api from '../../../../components/api.js'
 
 const ConfigureDevice = () => {
   const { deviceId } = useParams()
@@ -16,7 +17,7 @@ const ConfigureDevice = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-device-config/${deviceId}`)
+        const res = await api.get(`/devices/get-device-config/${deviceId}`)
         setDeviceConfig(res.data.device)
         setNewDeviceConfig(res.data.device)
         setAvailMeasureGroups(res.data.available_measurement_groups)
@@ -27,6 +28,9 @@ const ConfigureDevice = () => {
         setDeviceConfig([])
         setAvailMeasureGroups([])
         setServerConnectOk(false)
+        if (error.response?.status === 401) {
+          navigate("/login")
+        }
       }
     };
 
@@ -49,7 +53,7 @@ const ConfigureDevice = () => {
     console.log(newDeviceConfig)
     try {
       await toast.promise(
-        axios.post('http://127.0.0.1:8000/api/devices/update-device-config', newDeviceConfig),
+        api.post('/devices/update-device-config', newDeviceConfig),
         {
           pending: {
             render: 'Łączenie z serwerem...',
@@ -68,6 +72,9 @@ const ConfigureDevice = () => {
     }
     catch (error) {
       console.error(error)
+      if (error.response?.status === 401) {
+          navigate("/login")
+        }
     }
   }
 
@@ -76,7 +83,7 @@ const ConfigureDevice = () => {
     <div className=''>
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={1500}
         theme="dark"
         pauseOnFocusLoss={false}
         pauseOnHover={false}

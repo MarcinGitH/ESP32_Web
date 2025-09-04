@@ -8,7 +8,7 @@ import SensorCard from './SensorCard';
 import { assets } from '../../../../assets/assets';
 import MyChart from '../../../../components/MyChart';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-
+import api from '../../../../components/api.js'
 
 const DetailsCard = () => {
   const { measurementsGroup } = useParams()
@@ -97,7 +97,7 @@ const DetailsCard = () => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/devices/get-data-24h/${measurementsGroup}`)
+        const res = await api.get(`/devices/get-data-24h/${measurementsGroup}`)
         if (res.data.data) {
           const dataWithNulls = dataFillNull(res.data.data)
           const clearedData = gaussianSmooth(dataWithNulls, 5)
@@ -114,6 +114,9 @@ const DetailsCard = () => {
         console.error(error)
         setApiData([])
         setServerConnectOk(false)
+        if (error.response?.status === 401) {
+          navigate("/login")
+        }
       }
     };
 

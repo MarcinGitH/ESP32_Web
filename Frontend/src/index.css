@@ -10,13 +10,15 @@
   color: #fff !important;
 }
 
-
+body{
+  @apply select-none;
+}
 
 @layer base {
   * {
     font-family: Outfit;
     margin: 0;
-
+    
   }
 }
 
