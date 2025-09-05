@@ -12,6 +12,8 @@ urlpatterns = [
     path("devices/update-device-config", updateDeviceConfig),
     path("devices/update-measure-groups", updateMeasureGroups),
     path("devices/delete-devices", deleteDevices),
+    path("devices/get-measure-groups", getMeasureGroups),
+    path("devices/get-chart-data", getChartData),
 
     # user
     path("register", UserRegistrationAPIView.as_view()),

@@ -28,8 +28,8 @@ const Navbar = () => {
             const refreshToken = localStorage.getItem("refreshToken")
             if (refreshToken) {
                 await axios.post("http://127.0.0.1:8000/api/logout", { "refresh": refreshToken })
-                localStorage.removeItem("accessToken")
-                localStorage.removeItem("refreshToken")
+                sessionStorage.removeItem("accessToken")
+                sessionStorage.removeItem("refreshToken")
                 setLoggedIn(false)
                 setUsername("")
                 navigate("/")
@@ -37,8 +37,8 @@ const Navbar = () => {
         }
         catch (error) {
             if(error.code === "ERR_NETWORK"){
-                localStorage.removeItem("accessToken")
-                localStorage.removeItem("refreshToken")
+                sessionStorage.removeItem("accessToken")
+                sessionStorage.removeItem("refreshToken")
                 setLoggedIn(false)
                 setUsername("")
                 navigate("/")

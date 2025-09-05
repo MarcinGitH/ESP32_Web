@@ -80,4 +80,4 @@ class SensorData(models.Model):
     value = models.FloatField()
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['timestamp']

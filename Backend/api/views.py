@@ -89,6 +89,45 @@ def getData24h(request, measurements_group_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def getMeasureGroups(request):
+    user = request.user
+
+    groups = MeasurementsGroup.objects.filter(
+        user=user
+    )
+    
+    serializer = MeasurementGroupSerializer(groups,many=True)
+    return Response(serializer.data,)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getChartData(request):
+    user = request.user
+    selected_group = request.GET.get("selected_group")
+    start_date_str = request.GET.get("start_date")
+    end_date_str = request.GET.get("end_date")
+
+    date_format = "%Y-%m-%d %H:%M:%S"
+
+    try:
+        start_date = datetime.strptime(start_date_str, date_format)
+        end_date = datetime.strptime(end_date_str, date_format)
+    except Exception as e:
+        return Response({"error": f"Nieprawidłowy format daty: {e}"}, status=400)
+
+    data = SensorData.objects.filter(
+        measurements_group__user = user,
+        measurements_group = selected_group,
+        timestamp__gt = start_date,
+        timestamp__lt = end_date
+    )
+
+    serializer = SensorDataSerializer(data,many=True)
+    print(serializer.data)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def userSensorsActual(request):
     user = request.user
     sensors = Sensor.objects.filter(device__user=user)

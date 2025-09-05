@@ -226,7 +226,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
 
                         <p className='md:hidden text-left w-full text-xl text-gray-300'>Numer pinu:</p>
                         <div className='flex-1 text-center'>
-                            <select className='bg-gray-500 text-gray-200 px-3 py-2 rounded-md shadow-md cursor-pointer focus:outline-none'
+                            <select className='custom-select'
                                 value={sensor.pin_number}
                                 onChange={(e) => updateSensor("pin_number", sensor.sensor_id, +e.target.value)}>
                                 <option key={-1} value={-1}>---</option>

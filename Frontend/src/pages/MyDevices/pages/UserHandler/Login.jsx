@@ -58,9 +58,9 @@ const Login = () => {
             );
 
 
-            localStorage.setItem("accessToken", response.data.tokens.access);
-            localStorage.setItem("refreshToken", response.data.tokens.refresh);
-            localStorage.setItem("justLoggedIn", "true");
+            sessionStorage.setItem("accessToken", response.data.tokens.access);
+            sessionStorage.setItem("refreshToken", response.data.tokens.refresh);
+            sessionStorage.setItem("justLoggedIn", "true");
             setLoggedIn(true)
             setUsername(response.data.username)
             navigate("../my-devices")

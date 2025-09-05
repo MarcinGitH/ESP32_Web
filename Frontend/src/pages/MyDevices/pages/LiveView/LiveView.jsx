@@ -1,5 +1,5 @@
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import axios from 'axios';
 import { div, h2 } from 'framer-motion/client';
 import { AuthContext } from '../UserHandler/AuthContext';
 import api from '../../../../components/api.js'
+import { assets } from '../../../../assets/assets.js';
 
 const LiveView = () => {
   const [groupMode, setGroupMode] = useState(false)
@@ -17,7 +18,7 @@ const LiveView = () => {
   const [serverConnectOk, setServerConnectOk] = useState(false)
   const navigate = useNavigate()
   const { loggedIn, username, setLoggedIn, setUsername } = useContext(AuthContext);
-
+ const fullScreenRef = useRef()
 
   useEffect(() => {
 
@@ -61,10 +62,10 @@ const LiveView = () => {
 
     fetchData()
 
-    const justLoggedIn = localStorage.getItem("justLoggedIn")
+    const justLoggedIn = sessionStorage.getItem("justLoggedIn")
     if (justLoggedIn) {
       toast.success("Zalogowano pomyślnie")
-      localStorage.removeItem("justLoggedIn")
+      sessionStorage.removeItem("justLoggedIn")
     }
 
     const interval = setInterval(fetchData, 5000);
@@ -84,6 +85,15 @@ const LiveView = () => {
     setGroupName("");
   };
 
+  const toggleFullscreen = () => {
+
+    if (!document.fullscreenElement) {
+      fullScreenRef.current.requestFullscreen()
+    }
+    else {
+      document.exitFullscreen()
+    }
+  }
 
   const confirmGroup = async () => {
     const data = selectedSensors.map(s => ({ id: s, group_name: groupName }))
@@ -113,7 +123,9 @@ const LiveView = () => {
   ];
 
   const groupBar = (
-    <div className='flex items-center justify-center pt-5 sm:justify-end sm:pr-20'>
+    <div className='flex items-center justify-center pt-5 sm:justify-end sm:pr-20 relative'>
+            <img src={assets.expand} alt="" className='w-10 absolute top-5 right-5 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
+                    onClick={toggleFullscreen} />
       {!groupMode && (
         <button
           className='button'
@@ -177,7 +189,8 @@ const LiveView = () => {
           <h2 className='text-gray-300 text-center text-3xl py-10'>Brak połączenia z serwerem</h2>
         </div>
         :
-        <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'>
+        <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'
+            ref={fullScreenRef}>
           {groupBar}
           {!groups.length > 0 && <h2 className='text-gray-400 text-4xl pb-5'>Brak skonfigurowanych czujników</h2>}
           {groups.map((group, index) => (
