@@ -7,17 +7,19 @@ from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from EspServer.models import Sensor, Device, AddDeviceToken, MeasurementsGroup
 from django.utils import timezone
-from datetime import timedelta
+
 import secrets
-import time
+
 from django.contrib.auth import get_user_model
 import json
-
+from collections import defaultdict
 
 # User views
+
+
 class UserRegistrationAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
@@ -113,7 +115,40 @@ def getChartData(request, selected_group):
         measurements_group=selected_group,
         timestamp__gt=start_date,
         timestamp__lt=end_date
-    )
+    ).order_by("timestamp")
+
+    delta = end_date - start_date
+
+    # srednia dla dni jesli zakres dat wiekdszy niz tydzien a mniejszy niz miesiac
+    if timedelta(days=7) < delta < timedelta(days=31):
+        grouped = {}
+
+        for row in data:
+            day = row.timestamp.date()
+            if day not in grouped:
+                grouped[day] = []
+            grouped[day].append(row.value)
+
+        current_day = start_date.date()
+        end_day = end_date.date()
+        result = []
+
+        while end_day >= current_day:
+            temps = grouped.get(current_day, None)
+            if temps:
+                avg = sum(temps)/len(temps)
+            else:
+                avg = None
+
+            dt = datetime.combine(current_day, time(0, 0))
+
+            result.append({
+                "timestamp": int(dt.timestamp() * 1000),
+                "value": avg
+            })
+
+            current_day += timedelta(days=1)
+        return Response(result, status=status.HTTP_200_OK)
 
     serializer = SensorDataSerializer(data, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

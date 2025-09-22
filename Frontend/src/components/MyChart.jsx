@@ -17,7 +17,7 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
-const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimestamp}) => {
+const MyChart = ({ data, title, filters, serverConnectOk, startTimestamp, endTimestamp }) => {
 
   const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   const [chartZoomed, setChartZoomed] = useState(false)
@@ -37,7 +37,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
     TimeScale,
     zoomPlugin
   );
-  
+
 
   function gaussianSmooth(data, radius = 5) {
     const sigma = radius / 2;
@@ -97,8 +97,20 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
     return (data)
   }
 
+
   const resetZoom = () => {
-    chartRef.current.options.scales.x.time.unit = 'hour'
+    // Jesli zakres danych mniejszy niz tydzien
+    if (endTimestamp - startTimestamp < 7 * 24 * 60 * 60 * 1000) {
+      chartRef.current.options.scales.x.time.unit = 'hour'
+    }
+    // Jesli zakres danych mniejszy niz miesiac
+    else if (endTimestamp - startTimestamp < 31 * 24 * 60 * 60 * 1000) {
+      chartRef.current.options.scales.x.time.unit = 'day'
+      setProcessedData(data);
+    }
+
+
+
     chartRef.current.resetZoom()
     setChartZoomed(false)
   }
@@ -117,7 +129,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
       document.removeEventListener("keydown", keydown)
       document.removeEventListener("keyup", keyup)
     })
-    
+
   }, []);
 
   // ustawienie min max na osi y na wykresie
@@ -132,11 +144,36 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
     chartRef.current.options.scales.y.min = Math.round(min)
     chartRef.current.options.scales.y.max = Math.round(max)
 
+
+
     // Jesli zakres danych mniejszy niz tydzien
-    if(endTimestamp-startTimestamp < 7*24*60*60*1000){
+    if (endTimestamp - startTimestamp < 7 * 24 * 60 * 60 * 1000) {
       const dataWithNulls = dataFillNull(data);
       const smoothedData = gaussianSmooth(dataWithNulls, 5);
+      chartRef.current.options.scales.y.title.text = "Temperatura"
       setProcessedData(smoothedData);
+    }
+    // Jesli zakres danych mniejszy niz miesiac
+    else if (endTimestamp - startTimestamp < 31 * 24 * 60 * 60 * 1000) {
+      chartRef.current.options.scales.x.time.unit = 'day';
+      chartRef.current.options.scales.x.title.text = "Dzień"
+      chartRef.current.options.scales.y.title.text = "Średnia temperatura z dnia"
+
+      chartRef.current.data.datasets[0].pointRadius = 5
+
+      if (chartRef.current.data.datasets.length === 0) {
+        chartRef.current.data.datasets.push({
+          data: processedData?.map(a => a.value),
+          backgroundColor: 'rgb(255,255,255)',
+          borderColor: "rgb(46, 176, 171)",
+          pointRadius: 5,
+        })
+      } else {
+        chartRef.current.data.datasets[0].pointRadius = 5;
+      }
+      chartRef.current.update();
+      setProcessedData(data);
+
     }
   }, [data])
 
@@ -156,7 +193,6 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
         data: processedData?.map(a => a.value),
         backgroundColor: 'rgb(255,255,255)',
         borderColor: "rgb(46, 176, 171)",
-        pointRadius: 0,
 
       }
     ]
@@ -195,6 +231,11 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
           color: "rgb(100, 100, 100)",
 
         },
+        title: {
+          display: true,
+          text: 'Godzina',
+          color: "rgb(210, 210, 210)"
+        },
         ticks: {
           color: "rgb(210, 210, 210)",
           // stepSize: 0.5,
@@ -228,7 +269,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
           mode: 'xy',
           onZoom: ({ chart }) => {
             const xScale = chart.scales.x;
-          
+
             const range = xScale.max - xScale.min;
 
             // Jeśli zakres < 1 minuty - [hh:mm:ss]
@@ -242,11 +283,11 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
               xScale.options.title.text = "Godzina"
             }
             // Jesli zakres < 3 dni
-            else if(range < 3*24 * 60 * 60 * 1000) {
+            else if (range < 3 * 24 * 60 * 60 * 1000) {
               xScale.options.time.unit = 'hour';
               xScale.options.title.text = "Godzina"
             }
-            else{
+            else {
               xScale.options.time.unit = 'day';
               xScale.options.title.text = "Dzień"
             }
@@ -276,7 +317,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
       <img src={assets.expand} alt="" className='w-10 absolute top-2 right-2 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
         onClick={toggleFullscreen} />
 
-      <h2 className='text-center text-gray-300 text-l md:text-2xl mb-10 mt-3'>{title}</h2>
+      <h2 className='text-center text-gray-300 text-l md:text-2xl mb-10 mt-3 pt-3'>{title}</h2>
       <Line ref={chartRef} options={chartOptions} data={chartData} className={ctrlKeyDown ? "hover:cursor-move" : ""} />
     </div>
   )
