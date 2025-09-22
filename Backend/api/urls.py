@@ -3,22 +3,23 @@ from .views import *
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
-    path("devices/get-data-24h/<int:measurements_group_id>", getData24h),
-    path("devices/get-all-sensors", userSensorsActual),
-    path("devices/update-sensors-group", updateSensorsGroup),
-    path("devices/get-devices", getDeviceList),
-    path("devices/get-add-device-token", getAddDeviceToken),
-    path("devices/get-device-config/<int:deviceId>", getSingleDevice),
-    path("devices/update-device-config", updateDeviceConfig),
-    path("devices/update-measure-groups", updateMeasureGroups),
-    path("devices/delete-devices", deleteDevices),
-    path("devices/get-measure-groups", getMeasureGroups),
-    path("devices/get-chart-data", getChartData),
+    path("measure-groups/<int:measurements_group_id>/data-24h", getData24h),
+    path("sensors", userSensorsActual),
+    path("sensors/group", updateSensorsGroup),
+    path("devices", devices),
+    path("device-activation-token", getAddDeviceToken),
+    path("devices/<int:deviceId>/config", deviceConfig),
+    path("measure-groups", measureGroups),
+    path("measure-groups/<int:selected_group>/data", getChartData),
 
     # user
-    path("register", UserRegistrationAPIView.as_view()),
-    path("login", UserLoginAPIView.as_view()),
-    path("logout", UserLogoutAPIView.as_view()),
-    path("token/refresh", TokenRefreshView.as_view()),
-    path("user", UserInfoAPIView.as_view()),
+    path("auth/register", UserRegistrationAPIView.as_view()),
+    path("auth/login", UserLoginAPIView.as_view()),
+    path("auth/logout", UserLogoutAPIView.as_view()),
+    path("auth/token/refresh", TokenRefreshView.as_view()),
+    path("auth/user", UserInfoAPIView.as_view()),
+
+
+    
 ]
+

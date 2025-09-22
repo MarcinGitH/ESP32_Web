@@ -87,23 +87,12 @@ def getData24h(request, measurements_group_id):
     return Response(serializer.data,)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getMeasureGroups(request):
-    user = request.user
 
-    groups = MeasurementsGroup.objects.filter(
-        user=user
-    )
-    
-    serializer = MeasurementGroupSerializer(groups,many=True)
-    return Response(serializer.data,)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getChartData(request):
+def getChartData(request,selected_group):
     user = request.user
-    selected_group = request.GET.get("selected_group")
     start_date_str = request.GET.get("start_date")
     end_date_str = request.GET.get("end_date")
 
@@ -123,7 +112,6 @@ def getChartData(request):
     )
 
     serializer = SensorDataSerializer(data,many=True)
-    print(serializer.data)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -135,7 +123,7 @@ def userSensorsActual(request):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def updateSensorsGroup(request):
     user = request.user
@@ -169,41 +157,58 @@ def getDevices(request):
     return Response(serializer.data)
 
 
-@api_view(['GET'])
+@api_view(['GET','PUT'])
 @permission_classes([IsAuthenticated])
-def getDeviceList(request):
-    user = request.user
-    devices = Device.objects.filter(user__username=user)
-    available_measurement_groups = MeasurementsGroup.objects.filter(
-        mg_sensors__isnull=True,
-        user=user)
+def devices(request):
+    if request.method == "GET":
+        user = request.user
+        devices = Device.objects.filter(user__username=user)
+        available_measurement_groups = MeasurementsGroup.objects.filter(
+            mg_sensors__isnull=True,
+            user=user)
 
-    all_measurement_groups = MeasurementsGroup.objects.filter(
+        all_measurement_groups = MeasurementsGroup.objects.filter(
+            user=user
+        )
+
+        return Response({
+            "devices": DeviceSerializer(devices, many=True).data,
+            "available_measurement_groups": MeasurementGroupSerializer(available_measurement_groups, many=True).data,
+            "all_measurement_groups": MeasurementGroupSerializer(all_measurement_groups, many=True).data,
+        })
+    elif request.method == "PUT":
+        user = request.user
+        all_devices = Device.objects.filter(
+            user=user
+        )
+
+        devices_from_api = [device.get("id")
+                            for device in request.data]
+
+        for device in all_devices:
+            if device.id not in devices_from_api:
+                print(f"Deleted id: {device.id}" + str(device.id))
+                device.delete()
+        return Response({"status":"OK"})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def deleteDevices(request):
+    user = request.user
+    all_devices = Device.objects.filter(
         user=user
     )
 
-    return Response({
-        "devices": DeviceSerializer(devices, many=True).data,
-        "available_measurement_groups": MeasurementGroupSerializer(available_measurement_groups, many=True).data,
-        "all_measurement_groups": MeasurementGroupSerializer(all_measurement_groups, many=True).data,
-    })
+    devices_from_api = [device.get("id")
+                        for device in request.data]
 
+    for device in all_devices:
+        if device.id not in devices_from_api:
+            print(f"Deleted id: {device.id}" + str(device.id))
+            device.delete()
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getSingleDevice(request, deviceId):
-    user = request.user
-    device = Device.objects.get(
-        user=user,
-        id=deviceId)
-    available_measurement_groups = MeasurementsGroup.objects.filter(
-        mg_sensors__isnull=True,
-        user__username=user)
+    return Response({"errors:'OK'"}, status=200)
 
-    return Response({
-        "device": DeviceSerializer(device).data,
-        "available_measurement_groups": MeasurementGroupSerializer(available_measurement_groups, many=True).data,
-    })
 
 
 @api_view(['GET'])
@@ -230,84 +235,92 @@ def getAddDeviceToken(request):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
+
+@api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
-def updateDeviceConfig(request):
-    # pobieramy device_id z JSON-a
-    device_id = request.data.get("id")
+def deviceConfig(request,deviceId):
 
-    if not device_id:
-        return Response({"error": "Device id not provided"}, status=400)
+    if request.method == "GET":
+        user = request.user
+        device = Device.objects.get(
+            user=user,
+            id=deviceId)
+        available_measurement_groups = MeasurementsGroup.objects.filter(
+            mg_sensors__isnull=True,
+            user__username=user)
 
-    try:
-        device = Device.objects.get(id=device_id)
-    except Device.DoesNotExist:
-        return Response({"error": "Device not found"}, status=404)
+        return Response({
+            "device": DeviceSerializer(device).data,
+            "available_measurement_groups": MeasurementGroupSerializer(available_measurement_groups, many=True).data,
+        })
+    
+    elif request.method == "PATCH":
+        if not deviceId:
+            return Response({"error": "Device id not provided"}, status=400)
 
-    serializer = DeviceUpdateSerializer(
-        device, data=request.data, partial=True)
+        try:
+            device = Device.objects.get(id=deviceId)
+        except Device.DoesNotExist:
+            return Response({"error": "Device not found"}, status=404)
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=200)
-
-    return Response(serializer.errors, status=400)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def updateMeasureGroups(request):
-
-    user = request.user
-
-    # usuwanie grup
-    user_measure_groups = MeasurementsGroup.objects.filter(
-        user=user
-    )
-
-    new_groups_ids = [group["id"] for group in request.data]
-
-    for group in user_measure_groups:
-        if group.id not in new_groups_ids:
-            group.delete()
-
-    for group in request.data:
-        group_id = group.get("id")
-
-        if group_id > -1:
-            try:
-                existing_group = MeasurementsGroup.objects.get(id=group_id)
-            except:
-                continue
-
-            serializer = MeasurementGroupCreateSerializer(
-                existing_group, data=group, partial=True)
-        else:
-
-            serializer = MeasurementGroupCreateSerializer(data=group)
+        serializer = DeviceUpdateSerializer(
+            device, data=request.data, partial=True)
 
         if serializer.is_valid():
-            serializer.save(user=user)
-        else:
-            return Response({"status:'ERROR'"}, status=400)
+            serializer.save()
+            return Response(serializer.data, status=200)
 
-    return Response({"status:'OK'"}, status=200)
+        return Response(serializer.errors, status=400)
 
 
-@api_view(['POST'])
+@api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
-def deleteDevices(request):
-    user = request.user
-    all_devices = Device.objects.filter(
-        user=user
-    )
+def measureGroups(request):
+    if request.method == "GET":
+        user = request.user
 
-    devices_from_api = [device.get("id")
-                        for device in request.data]
+        groups = MeasurementsGroup.objects.filter(
+            user=user
+        )
+        
+        serializer = MeasurementGroupSerializer(groups,many=True)
+        return Response(serializer.data,)
+    
+    elif request.method == "PATCH":
+        user = request.user
 
-    for device in all_devices:
-        if device.id not in devices_from_api:
-            print(f"Deleted id: {device.id}" + str(device.id))
-            device.delete()
+        # usuwanie grup
+        user_measure_groups = MeasurementsGroup.objects.filter(
+            user=user
+        )
 
-    return Response({"errors:'OK'"}, status=200)
+        new_groups_ids = [group["id"] for group in request.data]
+
+        for group in user_measure_groups:
+            if group.id not in new_groups_ids:
+                group.delete()
+
+        for group in request.data:
+            group_id = group.get("id")
+
+            if group_id > -1:
+                try:
+                    existing_group = MeasurementsGroup.objects.get(id=group_id)
+                except:
+                    continue
+
+                serializer = MeasurementGroupCreateSerializer(
+                    existing_group, data=group, partial=True)
+            else:
+
+                serializer = MeasurementGroupCreateSerializer(data=group)
+
+            if serializer.is_valid():
+                serializer.save(user=user)
+            else:
+                return Response({"status:'ERROR'"}, status=400)
+
+        return Response({"status:'OK'"}, status=200)
+
+
+

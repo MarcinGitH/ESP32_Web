@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import api from '../../../../components/api.js'
+import useAuth from '../UserHandler/useAuth.jsx'
 
 const DeviceConf = () => {
   const [devicesList, setDevicesList] = useState([])
@@ -16,10 +17,12 @@ const DeviceConf = () => {
   const [deleteAnimationId, setDeleteAnimationId] = useState({ id: -1, list_name: "-1" })
   const navigate = useNavigate()
 
+  useAuth()
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get(`/devices/get-devices`)
+        const res = await api.get(`/devices`)
 
         setDevicesList(res.data.devices)
         if (!onceFetch.current) {
@@ -111,7 +114,7 @@ const DeviceConf = () => {
     try {
 
       await toast.promise(
-        api.post('/devices/update-measure-groups', allGroupList),
+        api.patch('/measure-groups', allGroupList),
         {
           pending: {
             render: 'Łączenie z serwerem...',
@@ -139,7 +142,7 @@ const DeviceConf = () => {
   const sendDevices = async () => {
     try {
       await toast.promise(
-        api.post('/devices/delete-devices', devicesList), //wyslane maja pozostac
+        api.put('/devices', devicesList), //wyslane maja pozostac
         {
           pending: {
             render: 'Łączenie z serwerem...',

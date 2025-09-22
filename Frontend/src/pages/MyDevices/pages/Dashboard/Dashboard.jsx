@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import api from '../../../../components/api.js'
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { div } from 'framer-motion/client'
+import useAuth from '../UserHandler/useAuth.jsx'
 
 const Dashboard = () => {
   const [chartTitle,setChartTitle] = useState("")
@@ -15,13 +16,13 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState( new Date(Date.now() - 24*60*60*1000))
   const [endDate, setEndDate] = useState(new Date())
 
-
+  useAuth();
 
   useEffect(()=>{
 
     const fetchData = async ()=>{
       try{
-        const response = await api.get("devices/get-measure-groups")
+        const response = await api.get("/measure-groups")
         setMeasureGroups(response.data.sort((a,b)=>a.name.localeCompare(b.name)))
         
       }
@@ -50,9 +51,8 @@ const Dashboard = () => {
     }
 
     try{
-      const response = await api.get("devices/get-chart-data",{
+      const response = await api.get(`measure-groups/${selectedGroup}/data`,{
         params: {
-          selected_group: selectedGroup,
           start_date: startDate.toLocaleString("sv-SE"), 
           end_date: endDate.toLocaleString("sv-SE"),
         },

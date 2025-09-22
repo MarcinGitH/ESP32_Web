@@ -28,7 +28,7 @@ const Login = () => {
 
         try {
             const response = await toast.promise(
-                axios.post('http://127.0.0.1:8000/api/login', formData),
+                axios.post('http://127.0.0.1:8000/api/auth/login', formData),
                 {
                     pending: {
                         render: 'Łączenie z serwerem...',
