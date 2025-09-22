@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-
+from rest_framework_simplejwt.exceptions import TokenError
 from datetime import datetime, timedelta
 from EspServer.models import Sensor, Device, AddDeviceToken, MeasurementsGroup
 from django.utils import timezone
@@ -55,11 +55,17 @@ class UserLogoutAPIView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         try:
             refresh_token = request.data["refresh"]
+
             token = RefreshToken(refresh_token)
+
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except TokenError as e:
+
+            if str(e) == "Token znajduję się na czarnej liście":
+                return Response(status=status.HTTP_205_RESET_CONTENT)
+            else:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserInfoAPIView(RetrieveAPIView):
@@ -95,9 +101,10 @@ def getMeasureGroups(request):
     groups = MeasurementsGroup.objects.filter(
         user=user
     )
-    
-    serializer = MeasurementGroupSerializer(groups,many=True)
+
+    serializer = MeasurementGroupSerializer(groups, many=True)
     return Response(serializer.data,)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -116,15 +123,16 @@ def getChartData(request):
         return Response({"error": f"Nieprawidłowy format daty: {e}"}, status=400)
 
     data = SensorData.objects.filter(
-        measurements_group__user = user,
-        measurements_group = selected_group,
-        timestamp__gt = start_date,
-        timestamp__lt = end_date
+        measurements_group__user=user,
+        measurements_group=selected_group,
+        timestamp__gt=start_date,
+        timestamp__lt=end_date
     )
 
-    serializer = SensorDataSerializer(data,many=True)
+    serializer = SensorDataSerializer(data, many=True)
     print(serializer.data)
-    return Response(serializer.data,status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
