@@ -9,6 +9,7 @@ import { div, h2 } from 'framer-motion/client';
 import { AuthContext } from '../UserHandler/AuthContext';
 import api from '../../../../components/api.js'
 import { assets } from '../../../../assets/assets.js';
+import useAuth from '../UserHandler/useAuth.jsx'
 
 const LiveView = () => {
   const [groupMode, setGroupMode] = useState(false)
@@ -20,32 +21,14 @@ const LiveView = () => {
   const { loggedIn, username, setLoggedIn, setUsername } = useContext(AuthContext);
  const fullScreenRef = useRef()
 
+useAuth();
+
   useEffect(() => {
-
-    const checkLoggedIn = async () => {
-      try {
-        
-          const response = await api.get("/user")
-          setLoggedIn(true)
-          setUsername(response.data.username)
-        }
-      catch (error) {
-        setLoggedIn(false)
-        setUsername("")
-        if (error.response?.status === 401) {
-          navigate("/login")
-        }
-      }
-    }
-
-    checkLoggedIn()
-
-   
 
 
     const fetchData = async () => {
       try {
-        const res = await api.get(`/devices/get-all-sensors`)
+        const res = await api.get(`/sensors`)
 
         setAllSensors(res.data)
         setServerConnectOk(true)
@@ -98,7 +81,7 @@ const LiveView = () => {
   const confirmGroup = async () => {
     const data = selectedSensors.map(s => ({ id: s, group_name: groupName }))
     try {
-      await api.post("/devices/update-sensors-group", data)
+      await api.patch("/sensors/group", data)
     }
     catch {
       console.error(err)

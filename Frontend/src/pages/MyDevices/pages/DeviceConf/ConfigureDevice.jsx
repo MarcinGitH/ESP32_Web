@@ -5,6 +5,7 @@ import axios from 'axios';
 import SensorsConfigList from './SensorsConfigList';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import api from '../../../../components/api.js'
+import useAuth from '../UserHandler/useAuth.jsx'
 
 const ConfigureDevice = () => {
   const { deviceId } = useParams()
@@ -14,14 +15,19 @@ const ConfigureDevice = () => {
   const [serverConnectOk, setServerConnectOk] = useState(false)
   const navigate = useNavigate()
 
+  useAuth();
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get(`/devices/get-device-config/${deviceId}`)
+        const res = await api.get(`/devices/${deviceId}/config`)
         setDeviceConfig(res.data.device)
         setNewDeviceConfig(res.data.device)
         setAvailMeasureGroups(res.data.available_measurement_groups)
         setServerConnectOk(true)
+        
       }
       catch (error) {
         console.error(error)
@@ -38,22 +44,27 @@ const ConfigureDevice = () => {
   }, [])
 
   const handleConfigChange = (sensors, availableMeasurGroups) => {
-    setNewDeviceConfig(prev => ({ ...prev, sensors: sensors, available_measurement_groups: availableMeasurGroups }))
+    setNewDeviceConfig(prev => ({ ...prev, sensors: sensors}))
+    setAvailMeasureGroups(availableMeasurGroups)
   }
 
+  console.log(availMeasureGroups)
   const handleInputChange = (key, value) => {
     setNewDeviceConfig(prev => ({
       ...prev,
       [key]: value
     }));
-    console.log(newDeviceConfig)
+    
   };
 
   const sendConfigToServer = async () => {
     console.log(newDeviceConfig)
     try {
       await toast.promise(
-        api.post('/devices/update-device-config', newDeviceConfig),
+        api.patch(`/devices/${newDeviceConfig.id}/config`, {
+          "name":newDeviceConfig.name,
+          "sensors":newDeviceConfig.sensors
+        }),
         {
           pending: {
             render: 'Łączenie z serwerem...',

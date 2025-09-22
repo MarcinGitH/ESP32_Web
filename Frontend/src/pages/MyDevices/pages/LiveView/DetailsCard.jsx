@@ -9,7 +9,7 @@ import { assets } from '../../../../assets/assets';
 import MyChart from '../../../../components/MyChart';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import api from '../../../../components/api.js'
-
+import useAuth from '../UserHandler/useAuth.jsx'
 const DetailsCard = () => {
   const { measurementsGroup } = useParams()
   const [apiData, setApiData] = useState({ data: [] });
@@ -18,7 +18,7 @@ const DetailsCard = () => {
   const navigate = useNavigate()
 
 
-
+  useAuth();
   
 
 
@@ -32,7 +32,7 @@ const DetailsCard = () => {
     const fetchData = async () => {
       try {
 
-        const res = await api.get(`/devices/get-data-24h/${measurementsGroup}`)
+        const res = await api.get(`/measure-groups/${measurementsGroup}/data-24h`)
         if (res.data.data) {
           
           setApiData(res.data)

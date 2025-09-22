@@ -3,6 +3,7 @@ import { assets } from '../../../../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import api from '../../../../components/api.js'
+import useAuth from '../UserHandler/useAuth.jsx'
 
 const AddNewDevice = () => {
     const navigate = useNavigate()
@@ -11,6 +12,8 @@ const AddNewDevice = () => {
     const [serverOk, setServerOk] = useState()
     const tokenRef = useRef()
     const [copySuccess, setCopySuccess] = useState(false);
+
+    useAuth();
 
     const copyToClipboard = async () => {
         if ("clipboard" in navigator) {
@@ -35,7 +38,7 @@ const AddNewDevice = () => {
         const getToken = async () => {
             if (!tokenRef.current || tokenRef.current.expires_at < Date.now()) {
                 try {
-                    const res = await api.get("/devices/get-add-device-token")
+                    const res = await api.get("/device-activation-token")
                     setAddDeviceToken(res.data)
                     setServerOk(true)
                 }

@@ -122,6 +122,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             return sensor;
         });
 
+        
         // Po wyborze usun wybrany element z dostepnych grup a zwolniony element dodaj
         let aMG = availableMeasureGroups
         if (key === "measurements_group") {
@@ -130,7 +131,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             aMG = sensor.measurements_group?.id > 0 ? [...reducedAMG, sensor.measurements_group] : reducedAMG
         }
 
-
+        
         onChange(updatedSensors, aMG);
     };
 

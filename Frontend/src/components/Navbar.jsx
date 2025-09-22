@@ -25,9 +25,9 @@ const Navbar = () => {
 
     const handleLogout = async () => {
         try {
-            const refreshToken = localStorage.getItem("refreshToken")
+            const refreshToken = sessionStorage.getItem("refreshToken")
             if (refreshToken) {
-                await axios.post("http://127.0.0.1:8000/api/logout", { "refresh": refreshToken })
+                await axios.post("http://127.0.0.1:8000/api/auth/logout", { "refresh": refreshToken })
                 sessionStorage.removeItem("accessToken")
                 sessionStorage.removeItem("refreshToken")
                 setLoggedIn(false)
