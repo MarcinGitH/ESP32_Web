@@ -81,3 +81,6 @@ class SensorData(models.Model):
 
     class Meta:
         ordering = ['timestamp']
+    
+    def __str__(self):
+        return f"{self.measurements_group} {self.timestamp} {self.value}"

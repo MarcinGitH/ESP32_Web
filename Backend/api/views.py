@@ -14,7 +14,8 @@ from datetime import timedelta
 import secrets
 import time
 from django.contrib.auth import get_user_model
-import json
+from django.db.models import Avg,DateTimeField
+from django.db.models.functions import TruncDate,Cast
 
 
 # User views
@@ -103,16 +104,54 @@ def getChartData(request,selected_group):
         end_date = datetime.strptime(end_date_str, date_format)
     except Exception as e:
         return Response({"error": f"Nieprawidłowy format daty: {e}"}, status=400)
+    
+    #Jesli zakres mniejszy niz 7 dni to wyslij wszytkie dane
+    if end_date - start_date < timedelta(days=7):
+        data = SensorData.objects.filter(
+            measurements_group__user = user,
+            measurements_group = selected_group,
+            timestamp__gt = start_date,
+            timestamp__lt = end_date
+        )
+        serializer = SensorDataSerializer(data,many=True)
+        result = serializer.data
 
-    data = SensorData.objects.filter(
-        measurements_group__user = user,
-        measurements_group = selected_group,
-        timestamp__gt = start_date,
-        timestamp__lt = end_date
+    #Jesli zakres wiekszy niz 7 dni i mniejszy niz 31 to wyslij srednia z kazdego dnia
+    else:
+        data = (
+        SensorData.objects
+        .filter(
+            measurements_group__user = user,
+            measurements_group = selected_group,
+            timestamp__gt=start_date, 
+            timestamp__lt=end_date)
+        .annotate(day=TruncDate('timestamp'))
+        .annotate(day_ts=Cast('day', DateTimeField())) 
+        .values('day_ts')
+        .annotate(avg_value=Avg('value'))
+        .order_by('day_ts')
     )
 
-    serializer = SensorDataSerializer(data,many=True)
-    return Response(serializer.data,status=status.HTTP_200_OK)
+        # Mapujemy dane z bazy do słownika: {day: value}
+        avg_by_day = {
+            d["day_ts"].date(): d["avg_value"] for d in data
+        }
+
+        # Budujemy pełną listę dni z nullami dla brakujących dat
+        current_day = start_date.date()
+        end_day = end_date.date()
+        result = []
+
+        while current_day <= end_day:
+            dt = datetime.combine(current_day, datetime.min.time())
+            result.append({
+                "timestamp": int(dt.timestamp() * 1000),
+                "value": avg_by_day.get(current_day, None)
+            })
+            current_day += timedelta(days=1)
+
+    print(result)
+    return Response(result, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -97,11 +97,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
     return (data)
   }
 
-  const resetZoom = () => {
-    chartRef.current.options.scales.x.time.unit = 'hour'
-    chartRef.current.resetZoom()
-    setChartZoomed(false)
-  }
+  
 
   useEffect(() => {
     const keydown = (e) => {
@@ -120,24 +116,79 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
     
   }, []);
 
+  const setAxis = ()=>{
+    const range = endTimestamp-startTimestamp
+    //Os X
+    // Jeśli zakres < 1 minuty - [hh:mm:ss]
+            if (range < 1 * 60 * 1000) {
+              chartRef.current.options.scales.x.time.unit = 'second';
+              chartRef.current.options.scales.x.title.text = "Godzina"
+            }
+            // Jeśli zakres < 1 godziny - [hh:mm]
+            else if (range < 1 * 60 * 60 * 1000) {
+              chartRef.current.options.scales.x.time.unit = 'minute';
+              chartRef.current.options.scales.x.title.text = "Godzina"
+            }
+            // Jesli zakres < 3 dni
+            else if(range < 3*24 * 60 * 60 * 1000) {
+              chartRef.current.options.scales.x.time.unit = 'hour';
+              chartRef.current.options.scales.x.title.text = "Godzina"
+            }
+            else{
+              chartRef.current.options.scales.x.time.unit = 'day';
+              chartRef.current.options.scales.x.title.text = "Dzień"
+            }
+
+      //Os Y
+      if (range < 7 *24* 60 * 60 * 1000) {
+              chartRef.current.options.scales.y.title.text = "Temperatura"
+              chartRef.current.data.datasets[0].pointRadius = 0
+              chartRef.current.data.datasets[0].pointHoverRadius = 0
+            }
+            else{
+              chartRef.current.options.scales.y.title.text = "Średnia temperatura"
+              chartRef.current.data.datasets[0].pointRadius = 4
+              chartRef.current.data.datasets[0].pointHoverRadius = 6
+            }
+           
+  }
+
+const resetZoom = () => {
+    setAxis()
+
+    chartRef.current.resetZoom()
+    setChartZoomed(false)
+  }
+
   // ustawienie min max na osi y na wykresie
   useEffect(() => {
-    if (data.length == 0 || chartZoomed) return
+    if (data.length == 0 ) return
 
-    const range = 2
+    const yRange = 2
     const values = data.map(d => d.value).filter(d => d != null)
-    const min = Math.min(...values) - range
-    const max = Math.max(...values) + range
+    const min = Math.min(...values) - yRange
+    const max = Math.max(...values) + yRange
+
+    resetZoom()
+
 
     chartRef.current.options.scales.y.min = Math.round(min)
     chartRef.current.options.scales.y.max = Math.round(max)
 
+
+
+    setAxis()
     // Jesli zakres danych mniejszy niz tydzien
     if(endTimestamp-startTimestamp < 7*24*60*60*1000){
       const dataWithNulls = dataFillNull(data);
       const smoothedData = gaussianSmooth(dataWithNulls, 5);
       setProcessedData(smoothedData);
     }
+    else{
+      setProcessedData(data)
+    }
+
+
   }, [data])
 
   const toggleFullscreen = () => {
@@ -156,7 +207,8 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
         data: processedData?.map(a => a.value),
         backgroundColor: 'rgb(255,255,255)',
         borderColor: "rgb(46, 176, 171)",
-        pointRadius: 0,
+        //  pointRadius: 0,
+        // pointHoverRadius: 0
 
       }
     ]
@@ -194,6 +246,11 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
         grid: {
           color: "rgb(100, 100, 100)",
 
+        },
+         title: {
+          display: true,
+          text: 'Godzina',
+          color: "rgb(210, 210, 210)"
         },
         ticks: {
           color: "rgb(210, 210, 210)",
@@ -262,6 +319,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
   return (
     <div className=' flex-auto h-100 sm:h-100 md:h-120 lg:h-150 min-w-[200px] sm:min-w-[280px] pb-25 pl-5 pr-5 bg-gray-600 rounded-xl relative'
       ref={fullScreenRef}>
+        
       {!serverConnectOk &&
         <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 px-10 py-10 w-max rounded-3xl'>
           <h2 className='text-3xl text-gray-300'>Brak połączenia z serwerem</h2>
@@ -276,7 +334,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
       <img src={assets.expand} alt="" className='w-10 absolute top-2 right-2 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
         onClick={toggleFullscreen} />
 
-      <h2 className='text-center text-gray-300 text-l md:text-2xl mb-10 mt-3'>{title}</h2>
+      <h2 className='text-center text-gray-300 text-l md:text-2xl mb-10 pt-3'>{title}</h2>
       <Line ref={chartRef} options={chartOptions} data={chartData} className={ctrlKeyDown ? "hover:cursor-move" : ""} />
     </div>
   )
