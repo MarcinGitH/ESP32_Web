@@ -36,18 +36,13 @@ const Navbar = () => {
             }
         }
         catch (error) {
-            if(error.code === "ERR_NETWORK"){
-                sessionStorage.removeItem("accessToken")
-                sessionStorage.removeItem("refreshToken")
-                setLoggedIn(false)
-                setUsername("")
-                navigate("/")
-            }
-            else{
-                console.log("Nieprawidłowe wylogowanie")
-            }
-            
-            
+
+            sessionStorage.removeItem("accessToken")
+            sessionStorage.removeItem("refreshToken")
+            setLoggedIn(false)
+            setUsername("")
+            navigate("/")
+
         }
     }
 

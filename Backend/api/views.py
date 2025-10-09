@@ -6,19 +6,21 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-
-from datetime import datetime, timedelta
+from rest_framework_simplejwt.exceptions import TokenError
+from datetime import datetime, timedelta, time
 from EspServer.models import Sensor, Device, AddDeviceToken, MeasurementsGroup
 from django.utils import timezone
-from datetime import timedelta
+
 import secrets
-import time
+
 from django.contrib.auth import get_user_model
 from django.db.models import Avg,DateTimeField
 from django.db.models.functions import TruncDate,Cast
 
 
 # User views
+
+
 class UserRegistrationAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
@@ -56,11 +58,17 @@ class UserLogoutAPIView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         try:
             refresh_token = request.data["refresh"]
+
             token = RefreshToken(refresh_token)
+
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except TokenError as e:
+
+            if str(e) == "Token znajduję się na czarnej liście":
+                return Response(status=status.HTTP_205_RESET_CONTENT)
+            else:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserInfoAPIView(RetrieveAPIView):
@@ -88,11 +96,9 @@ def getData24h(request, measurements_group_id):
     return Response(serializer.data,)
 
 
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getChartData(request,selected_group):
+def getChartData(request, selected_group):
     user = request.user
     start_date_str = request.GET.get("start_date")
     end_date_str = request.GET.get("end_date")
@@ -196,7 +202,7 @@ def getDevices(request):
     return Response(serializer.data)
 
 
-@api_view(['GET','PUT'])
+@api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def devices(request):
     if request.method == "GET":
@@ -228,7 +234,8 @@ def devices(request):
             if device.id not in devices_from_api:
                 print(f"Deleted id: {device.id}" + str(device.id))
                 device.delete()
-        return Response({"status":"OK"})
+        return Response({"status": "OK"})
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -247,7 +254,6 @@ def deleteDevices(request):
             device.delete()
 
     return Response({"errors:'OK'"}, status=200)
-
 
 
 @api_view(['GET'])
@@ -274,10 +280,9 @@ def getAddDeviceToken(request):
     return Response(serializer.data)
 
 
-
-@api_view(['GET','PATCH'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
-def deviceConfig(request,deviceId):
+def deviceConfig(request, deviceId):
 
     if request.method == "GET":
         user = request.user
@@ -292,7 +297,7 @@ def deviceConfig(request,deviceId):
             "device": DeviceSerializer(device).data,
             "available_measurement_groups": MeasurementGroupSerializer(available_measurement_groups, many=True).data,
         })
-    
+
     elif request.method == "PATCH":
         if not deviceId:
             return Response({"error": "Device id not provided"}, status=400)
@@ -312,7 +317,7 @@ def deviceConfig(request,deviceId):
         return Response(serializer.errors, status=400)
 
 
-@api_view(['GET','PATCH'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def measureGroups(request):
     if request.method == "GET":
@@ -321,10 +326,10 @@ def measureGroups(request):
         groups = MeasurementsGroup.objects.filter(
             user=user
         )
-        
-        serializer = MeasurementGroupSerializer(groups,many=True)
+
+        serializer = MeasurementGroupSerializer(groups, many=True)
         return Response(serializer.data,)
-    
+
     elif request.method == "PATCH":
         user = request.user
 
@@ -360,6 +365,3 @@ def measureGroups(request):
                 return Response({"status:'ERROR'"}, status=400)
 
         return Response({"status:'OK'"}, status=200)
-
-
-

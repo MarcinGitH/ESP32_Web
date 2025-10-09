@@ -17,7 +17,7 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
-const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimestamp}) => {
+const MyChart = ({ data, title, filters, serverConnectOk, startTimestamp, endTimestamp }) => {
 
   const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   const [chartZoomed, setChartZoomed] = useState(false)
@@ -37,7 +37,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
     TimeScale,
     zoomPlugin
   );
-  
+
 
   function gaussianSmooth(data, radius = 5) {
     const sigma = radius / 2;
@@ -113,7 +113,7 @@ const MyChart = ({ data, title, filters, serverConnectOk,startTimestamp,endTimes
       document.removeEventListener("keydown", keydown)
       document.removeEventListener("keyup", keyup)
     })
-    
+
   }, []);
 
   const setAxis = ()=>{
@@ -179,9 +179,10 @@ const resetZoom = () => {
 
     setAxis()
     // Jesli zakres danych mniejszy niz tydzien
-    if(endTimestamp-startTimestamp < 7*24*60*60*1000){
+    if (endTimestamp - startTimestamp < 7 * 24 * 60 * 60 * 1000) {
       const dataWithNulls = dataFillNull(data);
       const smoothedData = gaussianSmooth(dataWithNulls, 5);
+      chartRef.current.options.scales.y.title.text = "Temperatura"
       setProcessedData(smoothedData);
     }
     else{
@@ -285,7 +286,7 @@ const resetZoom = () => {
           mode: 'xy',
           onZoom: ({ chart }) => {
             const xScale = chart.scales.x;
-          
+
             const range = xScale.max - xScale.min;
 
             // Jeśli zakres < 1 minuty - [hh:mm:ss]
@@ -299,11 +300,11 @@ const resetZoom = () => {
               xScale.options.title.text = "Godzina"
             }
             // Jesli zakres < 3 dni
-            else if(range < 3*24 * 60 * 60 * 1000) {
+            else if (range < 3 * 24 * 60 * 60 * 1000) {
               xScale.options.time.unit = 'hour';
               xScale.options.title.text = "Godzina"
             }
-            else{
+            else {
               xScale.options.time.unit = 'day';
               xScale.options.title.text = "Dzień"
             }
