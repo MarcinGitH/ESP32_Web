@@ -17,7 +17,7 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
-const MyChart = ({ data, title, filters, serverConnectOk, startTimestamp, endTimestamp }) => {
+const MyChart = ({ data, title, filters, serverConnectOk, startTimestamp, endTimestamp, resetZoomAtDataChange }) => {
 
   const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   const [chartZoomed, setChartZoomed] = useState(false)
@@ -97,7 +97,7 @@ const MyChart = ({ data, title, filters, serverConnectOk, startTimestamp, endTim
     return (data)
   }
 
-  
+
 
   useEffect(() => {
     const keydown = (e) => {
@@ -116,44 +116,44 @@ const MyChart = ({ data, title, filters, serverConnectOk, startTimestamp, endTim
 
   }, []);
 
-  const setAxis = ()=>{
-    const range = endTimestamp-startTimestamp
+  const setAxis = () => {
+    const range = endTimestamp - startTimestamp
     //Os X
     // Jeśli zakres < 1 minuty - [hh:mm:ss]
-            if (range < 1 * 60 * 1000) {
-              chartRef.current.options.scales.x.time.unit = 'second';
-              chartRef.current.options.scales.x.title.text = "Godzina"
-            }
-            // Jeśli zakres < 1 godziny - [hh:mm]
-            else if (range < 1 * 60 * 60 * 1000) {
-              chartRef.current.options.scales.x.time.unit = 'minute';
-              chartRef.current.options.scales.x.title.text = "Godzina"
-            }
-            // Jesli zakres < 3 dni
-            else if(range < 3*24 * 60 * 60 * 1000) {
-              chartRef.current.options.scales.x.time.unit = 'hour';
-              chartRef.current.options.scales.x.title.text = "Godzina"
-            }
-            else{
-              chartRef.current.options.scales.x.time.unit = 'day';
-              chartRef.current.options.scales.x.title.text = "Dzień"
-            }
+    if (range < 1 * 60 * 1000) {
+      chartRef.current.options.scales.x.time.unit = 'second';
+      chartRef.current.options.scales.x.title.text = "Godzina"
+    }
+    // Jeśli zakres < 1 godziny - [hh:mm]
+    else if (range < 1 * 60 * 60 * 1000) {
+      chartRef.current.options.scales.x.time.unit = 'minute';
+      chartRef.current.options.scales.x.title.text = "Godzina"
+    }
+    // Jesli zakres < 3 dni
+    else if (range < 3 * 24 * 60 * 60 * 1000) {
+      chartRef.current.options.scales.x.time.unit = 'hour';
+      chartRef.current.options.scales.x.title.text = "Godzina"
+    }
+    else {
+      chartRef.current.options.scales.x.time.unit = 'day';
+      chartRef.current.options.scales.x.title.text = "Dzień"
+    }
 
-      //Os Y
-      if (range < 7 *24* 60 * 60 * 1000) {
-              chartRef.current.options.scales.y.title.text = "Temperatura"
-              chartRef.current.data.datasets[0].pointRadius = 0
-              chartRef.current.data.datasets[0].pointHoverRadius = 0
-            }
-            else{
-              chartRef.current.options.scales.y.title.text = "Średnia temperatura"
-              chartRef.current.data.datasets[0].pointRadius = 4
-              chartRef.current.data.datasets[0].pointHoverRadius = 6
-            }
-           
+    //Os Y
+    if (range < 7 * 24 * 60 * 60 * 1000) {
+      chartRef.current.options.scales.y.title.text = "Temperatura"
+      chartRef.current.data.datasets[0].pointRadius = 0
+      chartRef.current.data.datasets[0].pointHoverRadius = 0
+    }
+    else {
+      chartRef.current.options.scales.y.title.text = "Średnia temperatura"
+      chartRef.current.data.datasets[0].pointRadius = 4
+      chartRef.current.data.datasets[0].pointHoverRadius = 6
+    }
+
   }
 
-const resetZoom = () => {
+  const resetZoom = () => {
     setAxis()
 
     chartRef.current.resetZoom()
@@ -162,14 +162,17 @@ const resetZoom = () => {
 
   // ustawienie min max na osi y na wykresie
   useEffect(() => {
-    if (data.length == 0 ) return
+    if (data.length == 0) return
 
     const yRange = 2
     const values = data.map(d => d.value).filter(d => d != null)
     const min = Math.min(...values) - yRange
     const max = Math.max(...values) + yRange
 
-    resetZoom()
+    if (resetZoomAtDataChange) {
+      resetZoom()
+    }
+
 
 
     chartRef.current.options.scales.y.min = Math.round(min)
@@ -185,7 +188,7 @@ const resetZoom = () => {
       chartRef.current.options.scales.y.title.text = "Temperatura"
       setProcessedData(smoothedData);
     }
-    else{
+    else {
       setProcessedData(data)
     }
 
@@ -248,7 +251,7 @@ const resetZoom = () => {
           color: "rgb(100, 100, 100)",
 
         },
-         title: {
+        title: {
           display: true,
           text: 'Godzina',
           color: "rgb(210, 210, 210)"
@@ -320,7 +323,7 @@ const resetZoom = () => {
   return (
     <div className=' flex-auto h-100 sm:h-100 md:h-120 lg:h-150 min-w-[200px] sm:min-w-[280px] pb-25 pl-5 pr-5 bg-gray-600 rounded-xl relative'
       ref={fullScreenRef}>
-        
+
       {!serverConnectOk &&
         <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 px-10 py-10 w-max rounded-3xl'>
           <h2 className='text-3xl text-gray-300'>Brak połączenia z serwerem</h2>

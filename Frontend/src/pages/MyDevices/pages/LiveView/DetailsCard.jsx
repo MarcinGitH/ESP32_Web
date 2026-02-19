@@ -19,7 +19,7 @@ const DetailsCard = () => {
 
 
   useAuth();
-  
+
 
 
 
@@ -34,7 +34,7 @@ const DetailsCard = () => {
 
         const res = await api.get(`/measure-groups/${measurementsGroup}/data-24h`)
         if (res.data.data) {
-          
+
           setApiData(res.data)
         }
 
@@ -82,7 +82,7 @@ const DetailsCard = () => {
       </h2>
 
       <div className='flex flex-wrap xl:flex-nowrap px-5 items-center justify-center gap-5 pb-10'>
-        <MyChart data={apiData.data} title={"Dane z ostaniej doby"} serverConnectOk={serverConnectOk} endTimestamp={Date.now()} startTimestamp={Date.now() - 24 * 60 * 60 * 1000} />
+        <MyChart data={apiData.data} title={"Dane z ostaniej doby"} serverConnectOk={serverConnectOk} endTimestamp={Date.now()} startTimestamp={Date.now() - 24 * 60 * 60 * 1000} resetZoomAtDataChange={false} />
 
         <SensorCard
           sensorData={{

@@ -9,12 +9,12 @@ import { div } from 'framer-motion/client'
 import useAuth from '../UserHandler/useAuth.jsx'
 
 const Dashboard = () => {
-  const [chartTitle,setChartTitle] = useState("")
-  const [serverConnectOk,setServerConnectOK] = useState(false)
-  const [chartData,setChartData] = useState([])
-  const [measureGroups,setMeasureGroups] = useState()
-  const [selectedGroup,setSelectedGroup] = useState(-1)
-  const [startDate, setStartDate] = useState( new Date(Date.now() - 24*60*60*1000))
+  const [chartTitle, setChartTitle] = useState("")
+  const [serverConnectOk, setServerConnectOK] = useState(false)
+  const [chartData, setChartData] = useState([])
+  const [measureGroups, setMeasureGroups] = useState()
+  const [selectedGroup, setSelectedGroup] = useState(-1)
+  const [startDate, setStartDate] = useState(new Date(Date.now() - 24 * 60 * 60 * 1000))
   const [endDate, setEndDate] = useState(new Date())
 
 
@@ -25,13 +25,13 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const response = await api.get("/measure-groups")
-        setMeasureGroups(response.data.sort((a,b)=>a.name.localeCompare(b.name)))
+        setMeasureGroups(response.data.sort((a, b) => a.name.localeCompare(b.name)))
         setServerConnectOK(true)
       }
       catch (error) {
         console.log(error)
         setServerConnectOK(false)
-        
+
       }
     }
 
@@ -63,7 +63,7 @@ const Dashboard = () => {
       })
       setChartData(response.data)
       setServerConnectOK(true)
-      setChartTitle(measureGroups?.find(m=>m.id == selectedGroup)?.name)
+      setChartTitle(measureGroups?.find(m => m.id == selectedGroup)?.name)
     }
     catch (error) {
       console.log(error)
@@ -154,16 +154,16 @@ const Dashboard = () => {
             <div className=' bg-gray-800 px-10 py-10 w-max rounded-3xl'>
               <h2 className='text-3xl text-gray-300'>Brak połączenia z serwerem</h2>
             </div>
-          :
-            chartData.length>0 && chartData.filter(d => d.value!=null).length>0 ?
-            <div>
-              <MyChart data={chartData} title={chartTitle} serverConnectOk={serverConnectOk} startTimestamp={startDate} endTimestamp={endDate}/>
-            </div>
             :
-            <div className=' bg-gray-800 px-10 py-10 w-max rounded-3xl'>
-              <h2 className='text-3xl text-gray-300'>Brak danych do wyświetlenia</h2>
-            </div>
-            
+            chartData.length > 0 && chartData.filter(d => d.value != null).length > 0 ?
+              <div>
+                <MyChart data={chartData} title={chartTitle} serverConnectOk={serverConnectOk} startTimestamp={startDate} endTimestamp={endDate} resetZoomAtDataChange={true} />
+              </div>
+              :
+              <div className=' bg-gray-800 px-10 py-10 w-max rounded-3xl'>
+                <h2 className='text-3xl text-gray-300'>Brak danych do wyświetlenia</h2>
+              </div>
+
           }
         </div>
       </motion.div>
