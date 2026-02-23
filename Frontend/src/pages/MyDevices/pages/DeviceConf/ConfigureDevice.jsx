@@ -27,7 +27,7 @@ const ConfigureDevice = () => {
         setNewDeviceConfig(res.data.device)
         setAvailMeasureGroups(res.data.available_measurement_groups)
         setServerConnectOk(true)
-        
+
       }
       catch (error) {
         console.error(error)
@@ -44,7 +44,7 @@ const ConfigureDevice = () => {
   }, [])
 
   const handleConfigChange = (sensors, availableMeasurGroups) => {
-    setNewDeviceConfig(prev => ({ ...prev, sensors: sensors}))
+    setNewDeviceConfig(prev => ({ ...prev, sensors: sensors }))
     setAvailMeasureGroups(availableMeasurGroups)
   }
 
@@ -54,7 +54,7 @@ const ConfigureDevice = () => {
       ...prev,
       [key]: value
     }));
-    
+
   };
 
   const sendConfigToServer = async () => {
@@ -62,8 +62,8 @@ const ConfigureDevice = () => {
     try {
       await toast.promise(
         api.patch(`/devices/${newDeviceConfig.id}/config`, {
-          "name":newDeviceConfig.name,
-          "sensors":newDeviceConfig.sensors
+          "name": newDeviceConfig.name,
+          "sensors": newDeviceConfig.sensors
         }),
         {
           pending: {
@@ -71,7 +71,7 @@ const ConfigureDevice = () => {
             className: 'toast-background',
           },
           success: {
-            render: 'Ustawienia zostały zapisane. Zrestartuj urządzenie.',
+            render: 'Ustawienia zostały zapisane.',
             className: 'toast-background',
           },
           error: {
@@ -84,8 +84,8 @@ const ConfigureDevice = () => {
     catch (error) {
       console.error(error)
       if (error.response?.status === 401) {
-          navigate("/login")
-        }
+        navigate("/login")
+      }
     }
   }
 

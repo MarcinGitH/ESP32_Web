@@ -63,7 +63,8 @@ class MeasurementGroupCreateSerializer(serializers.ModelSerializer):
 
 class MeasurementGroupSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
-    name = serializers.CharField(allow_blank=False, required=True)
+    name = serializers.CharField(required=False, allow_null=True,
+                                 allow_blank=True)
     # created_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
@@ -125,7 +126,7 @@ class SensorWithActualDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sensor
         fields = ["id", "sensor_id", "measurements_group",
-                  "group_name", "actual_value", "pin_number"]
+                  "group_name", "actual_value", "type_of_sensor"]
 
     def get_actual_value(self, obj):
         if not obj.measurements_group:
@@ -151,17 +152,20 @@ class SensorGroupUpdateSerializer(serializers.Serializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     sensors = serializers.SerializerMethodField()
-
+    created_at = serializers.SerializerMethodField()
     # online = serializers.SerializerMethodField()
 
     class Meta:
         model = Device
         fields = ["id", "device_serial_number", "name",
-                  "online", "sensors"]
+                  "online", "sensors", "created_at"]
 
     def get_sensors(self, obj):
         sensor_data = obj.sensors.all()
         return SensorWithActualDataSerializer(sensor_data, many=True).data
+
+    def get_created_at(self, obj):
+        return int(obj.created_at.timestamp()*1000)
 
 
 class AddDeviceTokenSerializer(serializers.ModelSerializer):
@@ -180,13 +184,14 @@ class AddDeviceTokenSerializer(serializers.ModelSerializer):
 
 
 class SensorUpdateSerializer(serializers.ModelSerializer):
-    measurements_group = MeasurementGroupSerializer()  # tylko do walidacji id grupy
+    measurements_group = MeasurementGroupSerializer(
+        required=False, allow_null=True)
     id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Sensor
         fields = ["id", "sensor_id", "group_name",
-                  "measurements_group", "pin_number"]
+                  "measurements_group", "type_of_sensor"]
 
 
 class DeviceUpdateSerializer(serializers.ModelSerializer):
@@ -204,30 +209,35 @@ class DeviceUpdateSerializer(serializers.ModelSerializer):
         sensors_data = validated_data.pop("sensors", [])
 
         # obsluga usuwania sensorow
-        sensors_id_update_list = []
+        # sensors_id_update_list = []
 
-        for sensor_data in sensors_data:
-            sensors_id_update_list.append(sensor_data["sensor_id"])
+        # for sensor_data in sensors_data:
+        #     sensors_id_update_list.append(sensor_data["sensor_id"])
 
-        device_sensors = Sensor.objects.filter(device=instance)
-        for sensor in device_sensors:
-            if (sensor.sensor_id not in sensors_id_update_list):
-                sensor.delete()
+        # device_sensors = Sensor.objects.filter(device=instance)
+        # for sensor in device_sensors:
+        #     if (sensor.sensor_id not in sensors_id_update_list):
+        #         sensor.delete()
 
         # aktualizacja sensorów
         for sensor_data in sensors_data:
-            sensor, created = Sensor.objects.get_or_create(
+
+            sensor = Sensor.objects.get(
                 sensor_id=sensor_data["sensor_id"],
                 device=instance,
-                defaults={
-                    "measurements_group": MeasurementsGroup.objects.get(id=sensor_data["measurements_group"]["id"]),
-                    "pin_number": sensor_data["pin_number"],
-                }
             )
-            if not created:
-                sensor.measurements_group = MeasurementsGroup.objects.get(
-                    id=sensor_data["measurements_group"]["id"])
-                sensor.pin_number = sensor_data["pin_number"]
-                sensor.save()
+
+            mg_data = sensor_data.get("measurements_group")
+            if mg_data is None:
+                sensor.measurements_group = None
+            else:
+                if mg_data["id"] == -1:
+                    sensor.measurements_group = None
+                else:
+                    sensor.measurements_group = MeasurementsGroup.objects.get(
+                        id=mg_data["id"]
+                    )
+
+            sensor.save()
 
         return instance

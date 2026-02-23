@@ -33,6 +33,7 @@ class Device(models.Model):
     # opcjonalna nazwa urządzenia
     name = models.CharField(max_length=100, default="Nadaj nazwę")
     last_seen = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name or self.device_id}"
@@ -64,7 +65,7 @@ class Sensor(models.Model):
         MeasurementsGroup, on_delete=models.SET_NULL, blank=True, null=True, related_name='mg_sensors')
     # name = models.CharField(max_length=100, default="sensor name")
     group_name = models.CharField(max_length=100, default="Inne")
-    pin_number = models.IntegerField(default=1)
+    type_of_sensor = models.CharField(max_length=100, blank=True, null=True)
     # class Meta:
     #     # sensor_id unikalny w obrębie device
     #     unique_together = ('device', 'sensor_id')
@@ -81,6 +82,6 @@ class SensorData(models.Model):
 
     class Meta:
         ordering = ['timestamp']
-    
+
     def __str__(self):
         return f"{self.measurements_group} {self.timestamp} {self.value}"

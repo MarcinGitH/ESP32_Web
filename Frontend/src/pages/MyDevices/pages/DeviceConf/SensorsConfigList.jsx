@@ -122,7 +122,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             return sensor;
         });
 
-        
+
         // Po wyborze usun wybrany element z dostepnych grup a zwolniony element dodaj
         let aMG = availableMeasureGroups
         if (key === "measurements_group") {
@@ -131,7 +131,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
             aMG = sensor.measurements_group?.id > 0 ? [...reducedAMG, sensor.measurements_group] : reducedAMG
         }
 
-        
+
         onChange(updatedSensors, aMG);
     };
 
@@ -167,25 +167,25 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
         <div>
             <div className='flex sm:block items-center justify-between relative'>
                 <h2 className='text-3xl text-gray-300 text-center my-5'>Czujniki</h2>
-                <button className='button sm:absolute top-0 right-0'
+                {/* <button className='button sm:absolute top-0 right-0'
                     type='button'
-                    onClick={handleAddSensor}>Dodaj</button>
+                    onClick={handleAddSensor}>Dodaj</button> */}
             </div>
 
             <div className='hidden md:flex flex-row items-center bg-gray-800 py-1 px-5 mx-3'>
                 {/* <div className='flex-1 text-center text-xl text-gray-300'>Nazwa</div> */}
+                <div className='flex-1 text-center text-xl text-gray-300'>Nazwa czujnika</div>
                 <div className='flex-1 text-center text-xl text-gray-300'>Grupa pomiarów</div>
-                <div className='flex-1 text-center text-xl text-gray-300'>Numer pinu</div>
             </div>
 
             {!sensors.length && <div className='text-center text-gray-400 text-3xl py-5 bg-gray-700 rounded-2xl'>Brak skonfigurowanych czujników</div>}
-            <div className='flex flex-col bg-gray-700 rounded-2xl max-h-100 overflow-y-auto overflow-x-hidden'>
+            <div className='flex flex-col bg-gray-700 rounded-2xl max-h-200 overflow-y-auto overflow-x-hidden'>
                 {sensors.map(sensor => (
                     // obsluga usuwania
                     <div className={`flex flex-col md:flex-row items-center bg-gray-600 rounded-2xl py-3 my-3 px-5 mx-3 relative transition-all duration-200
                         ${sensor.sensor_id === sensorIdDeleteAnimation ? "opacity-0" : ""}`}
                         key={sensor.sensor_id}>
-                        <img src={assets.trash} alt=""
+                        {/* <img src={assets.trash} alt=""
                             className='absolute w-8 right-2 sm:right-5 bottom-2 sm:top-1/2 sm:-translate-y-1/2 cursor-pointer opacity-60 transition-all hover:rotate-6 hover:opacity-90'
                             onClick={() => handleDeleteQuestion(sensor.sensor_id, true)} />
                         <div className={`flex justify-between items-center absolute top-1/2 -translate-y-1/2 bg-gray-500 rounded-md border-2 border-gray-400 transition-all duration-200
@@ -201,7 +201,7 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                                     Nie
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* parametry czujnika */}
                         {/* <p className='md:hidden text-left w-full text-xl text-gray-300'>Nazwa:</p>
@@ -209,6 +209,19 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                             value={sensor.measurements_group?.name}
                             onChange={(e) => updateSensor("name", sensor.id, e.target.value)}
                             className='bg-gray-500 w-full sm:w-full px-2 py-1  rounded-md text-gray-200' /></div> */}
+
+                        <p className='md:hidden text-left w-full text-xl text-gray-300'>Nazwa czujnika:</p>
+                        <div className='flex-1 text-center'>
+                            {/* <select className='custom-select'
+                                value={sensor.pin_number}
+                                onChange={(e) => updateSensor("pin_number", sensor.sensor_id, +e.target.value)}>
+                                <option key={-1} value={-1}>---</option>
+                                {availablePins?.find(ap => ap.sensor_id === sensor.sensor_id)
+                                    ?.pins?.map(p => <option key={p} value={p}>{p}</option>)
+                                }
+                            </select> */}
+                            <p className='text-left w-full text-xl text-gray-300'>{sensor.type_of_sensor}</p>
+                        </div>
 
                         <p className='md:hidden text-left w-full text-xl text-gray-300'>Grupa pomiarów:</p>
                         {/* <div className='flex-1 text-center text-gray-200 mb-3'>{sensor.group_name}</div> */}
@@ -222,19 +235,6 @@ const SensorsConfigList = ({ sensors, availableMeasureGroups, onChange }) => {
                                     .map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                             </select>
 
-                        </div>
-
-
-                        <p className='md:hidden text-left w-full text-xl text-gray-300'>Numer pinu:</p>
-                        <div className='flex-1 text-center'>
-                            <select className='custom-select'
-                                value={sensor.pin_number}
-                                onChange={(e) => updateSensor("pin_number", sensor.sensor_id, +e.target.value)}>
-                                <option key={-1} value={-1}>---</option>
-                                {availablePins?.find(ap => ap.sensor_id === sensor.sensor_id)
-                                    ?.pins?.map(p => <option key={p} value={p}>{p}</option>)
-                                }
-                            </select>
                         </div>
                     </div>)
                 )}

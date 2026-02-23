@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
                         }
                     }
                     const response = await axios.get("http://127.0.0.1:8000/api/auth/user", config)
-                    console.log(response)
                     setLoggedIn(true)
                     setUsername(response.data.username)
                 }

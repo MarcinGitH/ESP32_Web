@@ -7,6 +7,7 @@ import { ToastContainer, toast, Bounce } from 'react-toastify';
 import api from '../../../../components/api.js'
 import useAuth from '../UserHandler/useAuth.jsx'
 
+
 const DeviceConf = () => {
   const [devicesList, setDevicesList] = useState([])
   const [allGroupList, setAllGroupList] = useState([])
@@ -17,7 +18,17 @@ const DeviceConf = () => {
   const [deleteAnimationId, setDeleteAnimationId] = useState({ id: -1, list_name: "-1" })
   const navigate = useNavigate()
 
+
   useAuth()
+
+
+  useEffect(() => {
+    const deviceAdded = sessionStorage.getItem("deviceAdded")
+    if (deviceAdded) {
+      toast.success("Urządzenie zostało dodane!")
+      sessionStorage.removeItem("deviceAdded")
+    }
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,7 +40,6 @@ const DeviceConf = () => {
           onceFetch.current = true
           setAllGroupList(res.data.all_measurement_groups)
         }
-
         setAvailableGroupList(res.data.available_measurement_groups)
         setServerConnectOk(true)
 
@@ -72,7 +82,9 @@ const DeviceConf = () => {
     setDeleteAnimationId({ id: id, list_name: listName })
 
     // timout zeby animacja wygaszania sensora miala czas
-    setTimeout(() => {
+    setTimeout(async () => {
+      let apiURL, data, infoMsg;
+
       setDeleteAnimationId({ id: -1, list_name: "-1" })
 
       if (listName === "group") {
@@ -81,7 +93,6 @@ const DeviceConf = () => {
       else if (listName === "device") {
         setDevicesList(prev => prev.filter(p => p.id !== id))
       }
-
 
       setDeleteQuestion(prev => {
         const exists = prev.find(d => d.id === id && d.list_name === listName)
@@ -92,6 +103,46 @@ const DeviceConf = () => {
           return prev
         }
       })
+
+      //wyslanie aktualizacji do serwera
+      if (listName === "group") {
+        apiURL = '/measure-groups'
+        data = allGroupList.filter(d => d.id != id)
+        infoMsg = 'Grupy zostały zapisane'
+      }
+      else if (listName === "device") {
+        apiURL = '/devices'
+        data = devicesList.filter(d => d.id != id)
+        infoMsg = 'Lista urządzeń została zapisana'
+      }
+
+      try {
+        await toast.promise(
+          listName === "group"
+            ? api.patch(apiURL, data)
+            : api.put(apiURL, data),
+          {
+            pending: {
+              render: 'Łączenie z serwerem...',
+              className: 'toast-background',
+            },
+            success: {
+              render: infoMsg,
+              className: 'toast-background',
+            },
+            error: {
+              render: 'Błąd zapisu',
+              className: 'toast-background',
+            },
+          }
+        )
+      }
+      catch (error) {
+        console.error(error)
+        if (error.response?.status === 401) {
+          navigate("/login")
+        }
+      }
     }, 200);
 
   }
@@ -105,7 +156,7 @@ const DeviceConf = () => {
     if (next_minus_id >= 0 || Number.isNaN(next_minus_id)) {
       next_minus_id = -1
     }
-    console.log(next_minus_id)
+
 
     setAllGroupList(prev => [{ id: next_minus_id, name: "" }, ...prev])
   }
@@ -139,33 +190,7 @@ const DeviceConf = () => {
     }
   }
 
-  const sendDevices = async () => {
-    try {
-      await toast.promise(
-        api.put('/devices', devicesList), //wyslane maja pozostac
-        {
-          pending: {
-            render: 'Łączenie z serwerem...',
-            className: 'toast-background',
-          },
-          success: {
-            render: 'Lista urządzeń została zapisana',
-            className: 'toast-background',
-          },
-          error: {
-            render: 'Błąd zapisu',
-            className: 'toast-background',
-          },
-        }
-      )
-    }
-    catch (error) {
-      console.error(error)
-      if (error.response?.status === 401) {
-        navigate("/login")
-      }
-    }
-  }
+
 
   return (
     <div className=''>
@@ -249,7 +274,7 @@ const DeviceConf = () => {
                             <h2 className='text-gray-300 text-xl lg:text-xl text-center'>{device.name}</h2>
                           </div>
                           <div className='flex-1'>
-                            <h3 className='text-gray-300 px-20 text-xl text-center'>{device.sensors.length}</h3>
+                            <h3 className='text-gray-300 px-20 text-xl text-center'>{device.sensors.filter(s => s.measurements_group).length}</h3>
                           </div>
                           <div className='flex-1'>
                             <p className='text-gray-300 text-xl text-center'>{device.online ? <span className='text-green-600 text-xl'>Online</span> : <span className='text-gray-400 text-xl'>Offline</span>}</p>
@@ -258,13 +283,13 @@ const DeviceConf = () => {
                       ))}
                     </div>
                   </div>}
-              <div className='text-right'>
+              {/* <div className='text-right'>
                 <button type='button'
                   className='button my-5 ml-5'
                   onClick={sendDevices}>
                   Zapisz
                 </button>
-              </div>
+              </div> */}
             </div>
             {/* Grupa pomiarow */}
             <div className='mt-5'>

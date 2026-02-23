@@ -13,6 +13,7 @@ const AddNewDevice = () => {
     const tokenRef = useRef()
     const [copySuccess, setCopySuccess] = useState(false);
 
+
     useAuth();
 
     const copyToClipboard = async () => {
@@ -26,7 +27,54 @@ const AddNewDevice = () => {
         setTimeout(() => {
             setCopySuccess(false)
         }, 1000);
-        console.log(copySuccess)
+    }
+
+    const getToken = async () => {
+        if (!tokenRef.current || tokenRef.current.expires_at < Date.now()) {
+            try {
+                const res = await api.get("/device-activation-token")
+                setAddDeviceToken(res.data)
+                setServerOk(true)
+            }
+            catch (error) {
+                setServerOk(false)
+                if (error.response?.status === 401) {
+                    navigate("/login")
+                }
+            }
+        }
+        else {
+            setTimeLeftBarWidth((tokenRef.current.expires_at - Date.now()) / (tokenRef.current.expires_at - tokenRef.current.created_at) * 100)
+        }
+
+    }
+
+    const checkForNewDevice = async () => {
+        try {
+            const res = await api.get("/devices")
+            const devices = res.data.devices
+            console.log(devices)
+            devices.forEach(device => {
+                if (device.created_at) {
+                    if (Date.now() - device.created_at < 15000) {
+                        sessionStorage.setItem("deviceAdded", "true");
+                        navigate("/my-devices/device-conf")
+                    }
+                }
+
+
+            })
+            setServerOk(true)
+
+            console.log(Date.now() - res.data.devices.created_at)
+
+        }
+        catch (error) {
+            setServerOk(false)
+            if (error.response?.status === 401) {
+                navigate("/login")
+            }
+        }
     }
 
     useEffect(() => {
@@ -35,29 +83,13 @@ const AddNewDevice = () => {
 
     useEffect(() => {
 
-        const getToken = async () => {
-            if (!tokenRef.current || tokenRef.current.expires_at < Date.now()) {
-                try {
-                    const res = await api.get("/device-activation-token")
-                    setAddDeviceToken(res.data)
-                    setServerOk(true)
-                }
-                catch(error) {
-                    setServerOk(false)
-                    if (error.response?.status === 401) {
-                        navigate("/login")
-                        }
-                }
-            }
-            else {
-                setTimeLeftBarWidth((tokenRef.current.expires_at - Date.now()) / (tokenRef.current.expires_at - tokenRef.current.created_at) * 100)
-            }
+        const getTokenInterval = setInterval(getToken, 100);
+        const checkDevicesInterval = setInterval(checkForNewDevice, 1000);
 
+        return () => {
+            clearInterval(getTokenInterval)
+            clearInterval(checkDevicesInterval)
         }
-
-        const interval = setInterval(getToken, 100);
-
-        return () => clearInterval(interval)
     }, [])
 
     return (

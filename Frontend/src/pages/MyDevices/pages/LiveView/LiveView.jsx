@@ -19,9 +19,9 @@ const LiveView = () => {
   const [serverConnectOk, setServerConnectOk] = useState(false)
   const navigate = useNavigate()
   const { loggedIn, username, setLoggedIn, setUsername } = useContext(AuthContext);
- const fullScreenRef = useRef()
+  const fullScreenRef = useRef()
 
-useAuth();
+  useAuth();
 
   useEffect(() => {
 
@@ -29,7 +29,7 @@ useAuth();
     const fetchData = async () => {
       try {
         const res = await api.get(`/sensors`)
-
+        console.log(res.data)
         setAllSensors(res.data)
         setServerConnectOk(true)
       }
@@ -107,8 +107,8 @@ useAuth();
 
   const groupBar = (
     <div className='flex items-center justify-center pt-5 sm:justify-end sm:pr-20 relative'>
-            <img src={assets.expand} alt="" className='w-10 absolute top-5 right-5 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
-                    onClick={toggleFullscreen} />
+      <img src={assets.expand} alt="" className='w-10 absolute top-5 right-5 cursor-pointer transition-all opacity-70 duration-200 hover:scale-110 hover:opacity-100'
+        onClick={toggleFullscreen} />
       {!groupMode && (
         <button
           className='button'
@@ -173,19 +173,19 @@ useAuth();
         </div>
         :
         <div className='flex flex-col bg-gray-800 rounded-xl my-10 sm:px-10'
-            ref={fullScreenRef}>
+          ref={fullScreenRef}>
           {groupBar}
           {!groups.length > 0 && <h2 className='text-gray-400 text-4xl pb-5'>Brak skonfigurowanych czujników</h2>}
           {groups.map((group, index) => (
             <div key={index}>
               <h2 className='text-gray-300 text-3xl font-bold my-10 w-full text-center bg-gray-700 rounded-md'>{group}</h2>
               <div className='flex flex-wrap pb-10 px-10 gap-10 justify-center'>
-                {allSensors.filter(d => d.group_name === group).map((d) => (
+                {allSensors.filter(d => d.group_name === group && d.measurements_group).map((d) => (
                   <SensorCard
                     key={d.id}
                     sensorData={{
                       id: d.id,
-                      measurements_group_name: d.measurements_group ? d.measurements_group.name : "Przypisz grupę pomiarów",
+                      measurements_group_name: d.measurements_group.name,
                       measurements_group_id: d.measurements_group ? d.measurements_group.id : null,
                       online: d.actual_value != null,
                       value: d.actual_value,

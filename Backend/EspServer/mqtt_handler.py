@@ -48,12 +48,12 @@ def cyclicData(payload):
 
     sensors = payload.get("sensors")
     device_serial_number = payload.get("device_serial_number")
-
+    print(device_serial_number)
     try:
         device = Device.objects.get(
             device_serial_number=device_serial_number,
         )
-
+        print(device)
         for sensorMQTT in sensors:
             sensor = Sensor.objects.get(
                 device=device,
@@ -70,6 +70,11 @@ def cyclicData(payload):
 
 
 def firstConfig(client, payload, device_serial_number):
+    sensors_names = {1: 'Temperatura',
+                     2: 'Wilgotność',
+                     3: 'Temperatura zewn. 1',
+                     4: 'Temperatura zewn. 2',
+                     5: 'Temperatura zewn. 3', }
 
     try:
         device_name = payload.get("device_name")
@@ -99,13 +104,30 @@ def firstConfig(client, payload, device_serial_number):
             defaults={
                 "user": user_token.user,
                 "device_serial_number": device_serial_number,
-                "name": device_name
+                "name": device_name,
+                "last_seen": timezone.now()
             }
         )
 
         if not created:
             device.name = device_name
+            device.user = user_token.user
             device.save()
+
+        # utworzenie czujnikow dla urzadzenia, jesli istnieja to wykasowanie przypisania grup pomiarow i group_name
+        sensors = Sensor.objects.filter(device_id=device.id)
+
+        if sensors.exists():
+            sensors.update(group_name="Inne", measurements_group=None)
+        else:
+            for sensor_number, sensor_name in sensors_names.items():
+                Sensor.objects.create(
+                    sensor_id=sensor_number,
+                    group_name="Inne",
+                    device=device,
+                    measurements_group_id=None,
+                    type_of_sensor=sensor_name
+                )
 
         sendStatus(client, device_serial_number, True)
     except Exception as e:
@@ -154,6 +176,7 @@ def sendConfig(client, payload, device_serial_number):
 
 
 def pingHandle(client, payload, device_serial_number):
+    print(payload)
     try:
         device = Device.objects.get(device_serial_number=device_serial_number)
         pingStatus = payload.get("ping_status", "")
@@ -176,8 +199,8 @@ def on_message(client, userdata, msg):
         firstConfig(client, payload, topic_parts[1])
     elif (topic_parts[0] == "ping"):
         pingHandle(client, payload, topic_parts[1])
-    elif (topic_parts[0] == "setConfig" and topic_parts[1] == "request"):
-        sendConfig(client, payload, topic_parts[2])
+    # elif (topic_parts[0] == "setConfig" and topic_parts[1] == "request"):
+    #     sendConfig(client, payload, topic_parts[2])
 
 
 def start_mqtt():

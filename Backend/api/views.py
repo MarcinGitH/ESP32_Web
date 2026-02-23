@@ -14,8 +14,8 @@ from django.utils import timezone
 import secrets
 
 from django.contrib.auth import get_user_model
-from django.db.models import Avg,DateTimeField
-from django.db.models.functions import TruncDate,Cast
+from django.db.models import Avg, DateTimeField
+from django.db.models.functions import TruncDate, Cast
 
 
 # User views
@@ -110,33 +110,33 @@ def getChartData(request, selected_group):
         end_date = datetime.strptime(end_date_str, date_format)
     except Exception as e:
         return Response({"error": f"Nieprawidłowy format daty: {e}"}, status=400)
-    
-    #Jesli zakres mniejszy niz 7 dni to wyslij wszytkie dane
+
+    # Jesli zakres mniejszy niz 7 dni to wyslij wszytkie dane
     if end_date - start_date < timedelta(days=7):
         data = SensorData.objects.filter(
-            measurements_group__user = user,
-            measurements_group = selected_group,
-            timestamp__gt = start_date,
-            timestamp__lt = end_date
+            measurements_group__user=user,
+            measurements_group=selected_group,
+            timestamp__gt=start_date,
+            timestamp__lt=end_date
         )
-        serializer = SensorDataSerializer(data,many=True)
+        serializer = SensorDataSerializer(data, many=True)
         result = serializer.data
 
-    #Jesli zakres wiekszy niz 7 dni i mniejszy niz 31 to wyslij srednia z kazdego dnia
+    # Jesli zakres wiekszy niz 7 dni i mniejszy niz 31 to wyslij srednia z kazdego dnia
     else:
         data = (
-        SensorData.objects
-        .filter(
-            measurements_group__user = user,
-            measurements_group = selected_group,
-            timestamp__gt=start_date, 
-            timestamp__lt=end_date)
-        .annotate(day=TruncDate('timestamp'))
-        .annotate(day_ts=Cast('day', DateTimeField())) 
-        .values('day_ts')
-        .annotate(avg_value=Avg('value'))
-        .order_by('day_ts')
-    )
+            SensorData.objects
+            .filter(
+                measurements_group__user=user,
+                measurements_group=selected_group,
+                timestamp__gt=start_date,
+                timestamp__lt=end_date)
+            .annotate(day=TruncDate('timestamp'))
+            .annotate(day_ts=Cast('day', DateTimeField()))
+            .values('day_ts')
+            .annotate(avg_value=Avg('value'))
+            .order_by('day_ts')
+        )
 
         # Mapujemy dane z bazy do słownika: {day: value}
         avg_by_day = {
@@ -158,6 +158,7 @@ def getChartData(request, selected_group):
 
     print(result)
     return Response(result, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
