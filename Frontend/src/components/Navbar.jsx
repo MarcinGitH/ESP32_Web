@@ -5,7 +5,7 @@ import { div, li } from 'framer-motion/client'
 import axios from 'axios'
 import { useContext } from "react";
 import { AuthContext } from '../pages/MyDevices/pages/UserHandler/AuthContext'
-
+import api from './api.js'
 
 
 const Navbar = () => {
@@ -27,7 +27,7 @@ const Navbar = () => {
         try {
             const refreshToken = sessionStorage.getItem("refreshToken")
             if (refreshToken) {
-                await axios.post("http://127.0.0.1:8000/api/auth/logout", { "refresh": refreshToken })
+                await api.post("/auth/logout", { "refresh": refreshToken })
                 sessionStorage.removeItem("accessToken")
                 sessionStorage.removeItem("refreshToken")
                 setLoggedIn(false)

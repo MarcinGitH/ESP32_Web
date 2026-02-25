@@ -53,11 +53,22 @@ const AddNewDevice = () => {
         try {
             const res = await api.get("/devices")
             const devices = res.data.devices
-            console.log(devices)
+            let addedDeviceInSession = sessionStorage.getItem("addedDevice")
+            if (!addedDeviceInSession) {
+                addedDeviceInSession = null
+            }
+            else {
+                addedDeviceInSession = JSON.parse(addedDeviceInSession)
+            }
+
+            console.log(addedDeviceInSession)
             devices.forEach(device => {
                 if (device.created_at) {
-                    if (Date.now() - device.created_at < 15000) {
-                        sessionStorage.setItem("deviceAdded", "true");
+                    if (Date.now() - device.created_at < 15000 && !(addedDeviceInSession && addedDeviceInSession.device_serial_number == device.device_serial_number && addedDeviceInSession.created_at == device.created_at)) {
+                        sessionStorage.setItem("deviceJustAdded", "true");
+                        sessionStorage.removeItem("addedDevice")
+                        addedDeviceInSession = { "device_serial_number": device.device_serial_number, "created_at": device.created_at }
+                        sessionStorage.setItem("addedDevice", JSON.stringify(addedDeviceInSession))
                         navigate("/my-devices/device-conf")
                     }
                 }
@@ -66,7 +77,6 @@ const AddNewDevice = () => {
             })
             setServerOk(true)
 
-            console.log(Date.now() - res.data.devices.created_at)
 
         }
         catch (error) {

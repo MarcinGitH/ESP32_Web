@@ -4,7 +4,7 @@ import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
-
+import api from '../../../../components/api.js'
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -25,7 +25,7 @@ const Register = () => {
 
         try {
             const response = await toast.promise(
-                axios.post('http://127.0.0.1:8000/api/auth/login', { email: formData.email, password: formData.password1 }),
+                api.post('/auth/login', { email: formData.email, password: formData.password1 }),
                 {
                     pending: {
                         render: 'Łączenie z serwerem...',
@@ -72,7 +72,7 @@ const Register = () => {
 
         try {
             await toast.promise(
-                axios.post('http://127.0.0.1:8000/api/auth/register', formData),
+                api.post('/auth/register', formData),
                 {
                     pending: {
                         render: 'Łączenie z serwerem...',

@@ -23,10 +23,10 @@ const DeviceConf = () => {
 
 
   useEffect(() => {
-    const deviceAdded = sessionStorage.getItem("deviceAdded")
+    const deviceAdded = sessionStorage.getItem("deviceJustAdded")
     if (deviceAdded) {
       toast.success("Urządzenie zostało dodane!")
-      sessionStorage.removeItem("deviceAdded")
+      sessionStorage.removeItem("deviceJustAdded")
     }
   }, [])
 

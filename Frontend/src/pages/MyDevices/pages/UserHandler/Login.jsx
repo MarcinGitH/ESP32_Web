@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
+import api from '../../../../components/api.js'
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ const Login = () => {
 
         try {
             const response = await toast.promise(
-                axios.post('http://127.0.0.1:8000/api/auth/login', formData),
+                api.post('/auth/login', formData),
                 {
                     pending: {
                         render: 'Łączenie z serwerem...',

@@ -72,9 +72,10 @@ def cyclicData(payload):
 def firstConfig(client, payload, device_serial_number):
     sensors_names = {1: 'Temperatura',
                      2: 'Wilgotność',
-                     3: 'Temperatura zewn. 1',
-                     4: 'Temperatura zewn. 2',
-                     5: 'Temperatura zewn. 3', }
+                     3: 'Ciśnienie',
+                     4: 'Temperatura zewn. 1',
+                     5: 'Temperatura zewn. 2',
+                     6: 'Temperatura zewn. 3', }
 
     try:
         device_name = payload.get("device_name")
@@ -105,13 +106,14 @@ def firstConfig(client, payload, device_serial_number):
                 "user": user_token.user,
                 "device_serial_number": device_serial_number,
                 "name": device_name,
-                "last_seen": timezone.now()
+                "last_seen": timezone.now(),
             }
         )
 
         if not created:
             device.name = device_name
             device.user = user_token.user
+            device.created_at = timezone.now()
             device.save()
 
         # utworzenie czujnikow dla urzadzenia, jesli istnieja to wykasowanie przypisania grup pomiarow i group_name
