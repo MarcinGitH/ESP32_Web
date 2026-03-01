@@ -203,12 +203,3 @@ def on_message(client, userdata, msg):
         pingHandle(client, payload, topic_parts[1])
     # elif (topic_parts[0] == "setConfig" and topic_parts[1] == "request"):
     #     sendConfig(client, payload, topic_parts[2])
-
-
-def start_mqtt():
-    client = mqtt.Client()
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect("127.0.0.1", 1883, 60)
-    client.loop_start()
-    # return client
