@@ -41,7 +41,7 @@ class Device(models.Model):
     @property
     def online(self):
         online = False
-        if self.last_seen > timezone.now()-timedelta(seconds=15):
+        if self.last_seen > timezone.now()-timedelta(seconds=150):
             online = True
 
         return online
