@@ -189,6 +189,7 @@ const LiveView = () => {
                       measurements_group_id: d.measurements_group ? d.measurements_group.id : null,
                       online: d.actual_value != null,
                       value: d.actual_value,
+                      battery_percent: d.battery_percent
                     }}
                     hoverEffect={true}
                     selected={selectedSensors.includes(d.id)}

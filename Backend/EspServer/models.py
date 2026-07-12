@@ -34,6 +34,8 @@ class Device(models.Model):
     name = models.CharField(max_length=100, default="Nadaj nazwę")
     last_seen = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    last_battery_percent = models.IntegerField(blank=True, null=True)
+    charging = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name or self.device_id}"

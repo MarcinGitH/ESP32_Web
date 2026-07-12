@@ -182,10 +182,14 @@ def pingHandle(client, payload, device_serial_number):
     try:
         device = Device.objects.get(device_serial_number=device_serial_number)
         pingStatus = payload.get("ping_status", "")
+        battery_percent = payload.get("battery_percent", None)
+        charging = payload.get("charging", None)
         if pingStatus == "OK":
             device.last_seen = timezone.now()
+            device.last_battery_percent = battery_percent
+            device.charging = charging
             device.save()
-            print("Ping: " + device_serial_number)
+            print("Ping: " + device_serial_number + " Battery: " + battery_percent + "Charging: " + charging)
     except:
         pass
 

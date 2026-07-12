@@ -122,11 +122,12 @@ class SensorWithData24hSerializer(serializers.ModelSerializer):
 class SensorWithActualDataSerializer(serializers.ModelSerializer):
     actual_value = serializers.SerializerMethodField()
     measurements_group = serializers.SerializerMethodField()
+    battery_percent = serializers.SerializerMethodField()
 
     class Meta:
         model = Sensor
         fields = ["id", "sensor_id", "measurements_group",
-                  "group_name", "actual_value", "type_of_sensor"]
+                  "group_name", "actual_value", "type_of_sensor","battery_percent"]
 
     def get_actual_value(self, obj):
         if not obj.measurements_group:
@@ -143,6 +144,11 @@ class SensorWithActualDataSerializer(serializers.ModelSerializer):
         if not obj.measurements_group:
             return None
         return MeasurementGroupSerializer(obj.measurements_group).data
+    
+    def get_battery_percent(self,obj):
+        if not obj.device.last_battery_percent:
+            return None
+        return obj.device.last_battery_percent
 
 
 class SensorGroupUpdateSerializer(serializers.Serializer):
